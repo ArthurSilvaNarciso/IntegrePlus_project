@@ -57,12 +57,19 @@ def listar_usuarios() -> List[tuple]:
         cursor.execute('SELECT id, username, permissao FROM usuarios')
         return cursor.fetchall()
 
-# ========== FUNÇÕES GUI ==========
+def listar_clientes() -> List[tuple]:
+    # Função compatível com relatórios - retorna usuários como clientes
+    return listar_usuarios()
 
-def gui_cadastrar_cliente():
+# === GUI ===
+
+def voltar(janela):
+    janela.destroy()
+
+def gui_cadastrar_cliente(tela_cheia=True):
     def salvar_cliente():
-        nome = entry_nome.get()
-        senha = entry_senha.get()
+        nome = entry_nome.get().strip()
+        senha = entry_senha.get().strip()
         permissao = var_permissao.get()
         if not nome or not senha:
             messagebox.showerror("Erro", "Preencha todos os campos.")
@@ -76,41 +83,47 @@ def gui_cadastrar_cliente():
 
     janela = tk.Toplevel()
     janela.title("Cadastrar Cliente")
-    janela.geometry("400x300")
-    janela.configure(bg="#2c3e50")
+    janela.geometry("800x600" if tela_cheia else "400x350")
+    janela.configure(bg="#1e1e1e")
 
-    frame = tk.Frame(janela, bg="#2c3e50")
-    frame.pack(expand=True)
+    frame = tk.Frame(janela, bg="#1e1e1e")
+    frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    tk.Label(frame, text="Nome de Usuário", bg="#2c3e50", fg="white", font=("Arial", 14)).pack(pady=5)
-    entry_nome = tk.Entry(frame, font=("Arial", 14))
-    entry_nome.pack(pady=5)
+    campos = [
+        ("Nome de Usuário", entry_nome := tk.Entry(frame, font=("Arial", 14))),
+        ("Senha", entry_senha := tk.Entry(frame, show='*', font=("Arial", 14)))
+    ]
 
-    tk.Label(frame, text="Senha", bg="#2c3e50", fg="white", font=("Arial", 14)).pack(pady=5)
-    entry_senha = tk.Entry(frame, show='*', font=("Arial", 14))
-    entry_senha.pack(pady=5)
+    for texto, entry in campos:
+        tk.Label(frame, text=texto, bg="#1e1e1e", fg="white", font=("Arial", 14)).pack(pady=5)
+        entry.pack(pady=5)
 
-    tk.Label(frame, text="Permissão", bg="#2c3e50", fg="white", font=("Arial", 14)).pack(pady=5)
+    tk.Label(frame, text="Permissão", bg="#1e1e1e", fg="white", font=("Arial", 14)).pack(pady=5)
     var_permissao = tk.StringVar(value="Funcionario")
-    tk.OptionMenu(frame, var_permissao, "Funcionario", "Admin").pack(pady=5)
+    menu = tk.OptionMenu(frame, var_permissao, "Funcionario", "Admin")
+    menu.config(font=("Arial", 12))
+    menu.pack(pady=5)
 
     tk.Button(frame, text="Cadastrar", command=salvar_cliente, bg="#27ae60", fg="white", font=("Arial", 14)).pack(pady=10)
+    tk.Button(frame, text="Voltar", command=lambda: voltar(janela), bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
 
-def gui_listar_clientes():
+def gui_listar_clientes(tela_cheia=True):
     janela = tk.Toplevel()
     janela.title("Listar Clientes")
-    janela.geometry("500x400")
+    janela.geometry("800x600" if tela_cheia else "500x400")
 
-    cols = ("ID", "Usuário", "Permissão")
-    tree = ttk.Treeview(janela, columns=cols, show='headings')
-    for col in cols:
+    tree = ttk.Treeview(janela, columns=("ID", "Usuário", "Permissão"), show='headings')
+    for col in ("ID", "Usuário", "Permissão"):
         tree.heading(col, text=col)
-    tree.pack(fill='both', expand=True)
+        tree.column(col, anchor=tk.CENTER, width=150)
+    tree.pack(fill='both', expand=True, padx=10, pady=10)
 
     for row in listar_usuarios():
         tree.insert('', 'end', values=row)
 
-def gui_excluir_cliente():
+    tk.Button(janela, text="Voltar", command=lambda: voltar(janela), bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=10)
+
+def gui_excluir_cliente(tela_cheia=True):
     def excluir():
         id_user = entry_id.get()
         if not id_user.isdigit():
@@ -122,19 +135,21 @@ def gui_excluir_cliente():
             conn.commit()
             if cursor.rowcount > 0:
                 messagebox.showinfo("Sucesso", "Cliente excluído com sucesso.")
+                janela.destroy()
             else:
                 messagebox.showwarning("Atenção", "Cliente não encontrado.")
 
     janela = tk.Toplevel()
     janela.title("Excluir Cliente")
-    janela.geometry("300x200")
-    janela.configure(bg="#2c3e50")
+    janela.geometry("600x400" if tela_cheia else "300x200")
+    janela.configure(bg="#1e1e1e")
 
-    frame = tk.Frame(janela, bg="#2c3e50")
-    frame.pack(expand=True)
+    frame = tk.Frame(janela, bg="#1e1e1e")
+    frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    tk.Label(frame, text="ID do Cliente", bg="#2c3e50", fg="white", font=("Arial", 14)).pack(pady=10)
+    tk.Label(frame, text="ID do Cliente", bg="#1e1e1e", fg="white", font=("Arial", 14)).pack(pady=10)
     entry_id = tk.Entry(frame, font=("Arial", 14))
     entry_id.pack(pady=10)
 
     tk.Button(frame, text="Excluir", command=excluir, bg="#e74c3c", fg="white", font=("Arial", 14)).pack(pady=10)
+    tk.Button(frame, text="Voltar", command=lambda: voltar(janela), bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)

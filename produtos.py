@@ -1,8 +1,13 @@
-from database import conectar
+from database import conectar, criar_tabelas
 import pandas as pd
 from typing import List, Tuple
 import tkinter as tk
 from tkinter import messagebox, ttk
+
+# Inicializar tabelas
+criar_tabelas()
+
+# ================= BANCO DE DADOS =================
 
 def cadastrar_produto(nome: str, quantidade: int, preco: float, validade: str) -> None:
     if not nome or quantidade < 0 or preco < 0:
@@ -45,11 +50,11 @@ def exportar_produtos_para_excel(caminho: str = 'produtos_exportados.xlsx') -> N
         if produtos:
             df = pd.DataFrame(produtos, columns=['ID', 'Nome', 'Quantidade', 'Preço', 'Validade'])
             df.to_excel(caminho, index=False)
-            print(f"Produtos exportados para '{caminho}'.")
+            messagebox.showinfo("Exportação", f"Produtos exportados com sucesso para '{caminho}'.")
         else:
-            print("Nenhum produto encontrado para exportar.")
+            messagebox.showinfo("Exportação", "Nenhum produto encontrado para exportar.")
     except Exception as e:
-        print(f"Erro ao exportar produtos: {e}")
+        messagebox.showerror("Erro", f"Erro ao exportar produtos: {e}")
 
 def buscar_produtos_por_nome(nome: str) -> List[Tuple]:
     with conectar() as conn:
@@ -63,16 +68,16 @@ def produtos_estoque_baixo(limite: int = 5) -> List[Tuple]:
         cursor.execute("SELECT * FROM produtos WHERE quantidade <= ?", (limite,))
         return cursor.fetchall()
 
-# Funções de interface gráfica
+# ================= INTERFACE GRÁFICA =================
 
-def gui_cadastrar_produto():
+def gui_cadastrar_produto(tela_cheia=False):
     def salvar():
-        nome = entry_nome.get()
-        quantidade = entry_quantidade.get()
-        preco = entry_preco.get()
-        validade = entry_validade.get()
         try:
-            cadastrar_produto(nome, int(quantidade), float(preco), validade)
+            nome = entry_nome.get()
+            quantidade = int(entry_quantidade.get())
+            preco = float(entry_preco.get())
+            validade = entry_validade.get()
+            cadastrar_produto(nome, quantidade, preco, validade)
             messagebox.showinfo("Sucesso", "Produto cadastrado com sucesso!")
             janela.destroy()
         except Exception as e:
@@ -80,40 +85,62 @@ def gui_cadastrar_produto():
 
     janela = tk.Toplevel()
     janela.title("Cadastrar Produto")
+    janela.geometry("800x600" if tela_cheia else "400x300")
+    janela.configure(bg="#2c3e50")
 
-    tk.Label(janela, text="Nome:").grid(row=0, column=0, padx=5, pady=5)
-    entry_nome = tk.Entry(janela)
-    entry_nome.grid(row=0, column=1, padx=5, pady=5)
+    frame = tk.Frame(janela, bg="#34495e", pady=20, padx=20)
+    frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    tk.Label(janela, text="Quantidade:").grid(row=1, column=0, padx=5, pady=5)
-    entry_quantidade = tk.Entry(janela)
-    entry_quantidade.grid(row=1, column=1, padx=5, pady=5)
+    campos = [
+        ("Nome:", entry_nome := tk.Entry(frame, font=("Arial", 12), width=30)),
+        ("Quantidade:", entry_quantidade := tk.Entry(frame, font=("Arial", 12), width=30)),
+        ("Preço:", entry_preco := tk.Entry(frame, font=("Arial", 12), width=30)),
+        ("Validade (dd/mm/aaaa):", entry_validade := tk.Entry(frame, font=("Arial", 12), width=30))
+    ]
 
-    tk.Label(janela, text="Preço:").grid(row=2, column=0, padx=5, pady=5)
-    entry_preco = tk.Entry(janela)
-    entry_preco.grid(row=2, column=1, padx=5, pady=5)
+    for i, (label, entry) in enumerate(campos):
+        tk.Label(frame, text=label, bg="#34495e", fg="white", font=("Arial", 12)).grid(row=i, column=0, padx=10, pady=8, sticky="e")
+        entry.grid(row=i, column=1, padx=10, pady=8)
 
-    tk.Label(janela, text="Validade (dd/mm/aaaa):").grid(row=3, column=0, padx=5, pady=5)
-    entry_validade = tk.Entry(janela)
-    entry_validade.grid(row=3, column=1, padx=5, pady=5)
+    tk.Button(frame, text="Salvar", command=salvar, bg="#27ae60", fg="white", font=("Arial", 12)).grid(row=len(campos), column=0, columnspan=2, pady=15)
+    tk.Button(frame, text="Voltar", command=janela.destroy, bg="#34495e", fg="white", font=("Arial", 12)).grid(row=len(campos)+1, column=0, columnspan=2, pady=5)
 
-    tk.Button(janela, text="Salvar", command=salvar).grid(row=4, column=0, columnspan=2, pady=10)
+def gui_listar_produtos(tela_cheia=False, parent=None):
+    if parent:
+        # Se parent for fornecido, criar dentro do frame pai
+        for widget in parent.winfo_children():
+            widget.destroy()
+        
+        tk.Label(parent, text="ESTOQUE ATUAL", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).pack(pady=10)
+        
+        colunas = ['ID', 'Nome', 'Qtd', 'Preço', 'Validade']
+        tree = ttk.Treeview(parent, columns=colunas, show='headings', height=15)
+        for col in colunas:
+            tree.heading(col, text=col)
+            tree.column(col, anchor=tk.CENTER, width=80)
+        tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-def gui_listar_produtos():
-    janela = tk.Toplevel()
-    janela.title("Listar Produtos")
+        for produto in listar_produtos():
+            tree.insert('', tk.END, values=produto)
+    else:
+        # Criar janela separada
+        janela = tk.Toplevel()
+        janela.title("Estoque")
+        janela.geometry("1000x600" if tela_cheia else "600x400")
 
-    colunas = ['ID', 'Nome', 'Quantidade', 'Preço', 'Validade']
-    tree = ttk.Treeview(janela, columns=colunas, show='headings')
-    for col in colunas:
-        tree.heading(col, text=col)
-        tree.column(col, width=100)
-    tree.pack(fill=tk.BOTH, expand=True)
+        colunas = ['ID', 'Nome', 'Quantidade', 'Preço', 'Validade']
+        tree = ttk.Treeview(janela, columns=colunas, show='headings')
+        for col in colunas:
+            tree.heading(col, text=col)
+            tree.column(col, anchor=tk.CENTER, width=150)
+        tree.pack(fill=tk.BOTH, expand=True)
 
-    for produto in listar_produtos():
-        tree.insert('', tk.END, values=produto)
+        for produto in listar_produtos():
+            tree.insert('', tk.END, values=produto)
 
-def gui_atualizar_produto():
+        tk.Button(janela, text="Voltar", command=janela.destroy, bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=10)
+
+def gui_atualizar_produto(tela_cheia=False):
     def buscar():
         try:
             produto_id = int(entry_id.get())
@@ -150,32 +177,32 @@ def gui_atualizar_produto():
 
     janela = tk.Toplevel()
     janela.title("Atualizar Produto")
+    janela.geometry("800x600" if tela_cheia else "400x350")
+    janela.configure(bg="#2c3e50")
 
-    tk.Label(janela, text="ID do Produto:").grid(row=0, column=0, padx=5, pady=5)
-    entry_id = tk.Entry(janela)
+    frame = tk.Frame(janela, bg="#34495e", pady=20, padx=20)
+    frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+    tk.Label(frame, text="ID do Produto:", bg="#34495e", fg="white", font=("Arial", 12)).grid(row=0, column=0, padx=5, pady=5)
+    entry_id = tk.Entry(frame, font=("Arial", 12))
     entry_id.grid(row=0, column=1, padx=5, pady=5)
+    tk.Button(frame, text="Buscar", command=buscar, bg="#3498db", fg="white", font=("Arial", 10)).grid(row=0, column=2, padx=5, pady=5)
 
-    tk.Button(janela, text="Buscar", command=buscar).grid(row=0, column=2, padx=5, pady=5)
+    campos = [
+        ("Nome:", entry_nome := tk.Entry(frame, font=("Arial", 12))),
+        ("Quantidade:", entry_quantidade := tk.Entry(frame, font=("Arial", 12))),
+        ("Preço:", entry_preco := tk.Entry(frame, font=("Arial", 12))),
+        ("Validade:", entry_validade := tk.Entry(frame, font=("Arial", 12)))
+    ]
 
-    tk.Label(janela, text="Nome:").grid(row=1, column=0, padx=5, pady=5)
-    entry_nome = tk.Entry(janela)
-    entry_nome.grid(row=1, column=1, padx=5, pady=5)
+    for i, (label, entry) in enumerate(campos, start=1):
+        tk.Label(frame, text=label, bg="#34495e", fg="white", font=("Arial", 12)).grid(row=i, column=0, padx=5, pady=5)
+        entry.grid(row=i, column=1, columnspan=2, padx=5, pady=5)
 
-    tk.Label(janela, text="Quantidade:").grid(row=2, column=0, padx=5, pady=5)
-    entry_quantidade = tk.Entry(janela)
-    entry_quantidade.grid(row=2, column=1, padx=5, pady=5)
+    tk.Button(frame, text="Atualizar", command=atualizar, bg="#27ae60", fg="white", font=("Arial", 12)).grid(row=6, column=0, columnspan=3, pady=15)
+    tk.Button(frame, text="Voltar", command=janela.destroy, bg="#34495e", fg="white", font=("Arial", 12)).grid(row=7, column=0, columnspan=3, pady=5)
 
-    tk.Label(janela, text="Preço:").grid(row=3, column=0, padx=5, pady=5)
-    entry_preco = tk.Entry(janela)
-    entry_preco.grid(row=3, column=1, padx=5, pady=5)
-
-    tk.Label(janela, text="Validade (dd/mm/aaaa):").grid(row=4, column=0, padx=5, pady=5)
-    entry_validade = tk.Entry(janela)
-    entry_validade.grid(row=4, column=1, padx=5, pady=5)
-
-    tk.Button(janela, text="Atualizar", command=atualizar).grid(row=5, column=0, columnspan=3, pady=10)
-
-def gui_excluir_produto():
+def gui_excluir_produto(tela_cheia=False):
     def excluir():
         try:
             produto_id = int(entry_id.get())
@@ -187,9 +214,14 @@ def gui_excluir_produto():
 
     janela = tk.Toplevel()
     janela.title("Excluir Produto")
+    janela.geometry("500x300" if tela_cheia else "300x200")
+    janela.configure(bg="#2c3e50")
 
-    tk.Label(janela, text="ID do Produto:").grid(row=0, column=0, padx=5, pady=5)
-    entry_id = tk.Entry(janela)
-    entry_id.grid(row=0, column=1, padx=5, pady=5)
+    frame = tk.Frame(janela, bg="#34495e", pady=20, padx=20)
+    frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    tk.Button(janela, text="Excluir", command=excluir).grid(row=1, column=0, columnspan=2, pady=10)
+    tk.Label(frame, text="ID do Produto:", bg="#34495e", fg="white", font=("Arial", 14)).pack(pady=10)
+    entry_id = tk.Entry(frame, font=("Arial", 14))
+    entry_id.pack(pady=5)
+    tk.Button(frame, text="Excluir", command=excluir, bg="#e74c3c", fg="white", font=("Arial", 14)).pack(pady=15)
+    tk.Button(frame, text="Voltar", command=janela.destroy, bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)

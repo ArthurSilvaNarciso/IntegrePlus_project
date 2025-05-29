@@ -8,17 +8,7 @@ def conectar():
 def criar_tabelas():
     with conectar() as conn:
         cursor = conn.cursor()
-
-        # Tabela de usuários
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                senha BLOB NOT NULL,
-                permissao TEXT DEFAULT 'Funcionario'
-            )
-        ''')
-
+        
         # Tabela de produtos
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS produtos (
@@ -26,9 +16,23 @@ def criar_tabelas():
                 nome TEXT NOT NULL,
                 quantidade INTEGER NOT NULL,
                 preco REAL NOT NULL,
-                validade TEXT
+                validade TEXT NOT NULL
             )
         ''')
-
+        
+        # Tabela de vendas
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS vendas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                produto_id INTEGER,
+                quantidade INTEGER NOT NULL,
+                data TEXT NOT NULL,
+                FOREIGN KEY (produto_id) REFERENCES produtos (id)
+            )
+        ''')
+        
         conn.commit()
-       
+
+# Inicializar banco de dados
+if __name__ == "__main__":
+    criar_tabelas()

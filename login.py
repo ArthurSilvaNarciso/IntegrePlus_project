@@ -383,6 +383,19 @@ class ModernLoginWindow:
             hover_bg=self.colors['primary']
         )
         register_btn.pack(fill='x', ipady=12, pady=(0, 20))
+
+        # Exit application button
+        exit_btn = AnimatedButton(
+            buttons_frame,
+            text="❌ Sair do Aplicativo",
+            bg=self.colors['error'],
+            fg='white',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            command=self.root.quit,
+            hover_bg='#c0392b'
+        )
+        exit_btn.pack(fill='x', ipady=12, pady=(0, 20))
         
         # Info section
         info_frame = ModernCard(login_card, theme=self.current_theme)
@@ -469,8 +482,12 @@ class ModernLoginWindow:
         self.login_btn.configure(text="🔄 Verificando...", state='disabled')
         self.loading_spinner.start()
         
+        # Cancel any previous pending login callbacks
+        if hasattr(self, '_login_after_id'):
+            self.root.after_cancel(self._login_after_id)
+        
         # Simulate async login (in real app, use threading)
-        self.root.after(1000, lambda: self._process_login(username, password))
+        self._login_after_id = self.root.after(1000, lambda: self._process_login(username, password))
     
     def _process_login(self, username, password):
         """Process login credentials"""
@@ -488,8 +505,12 @@ class ModernLoginWindow:
                 
                 self.show_notification(f"Bem-vindo, {user_data['username']}!", 'success')
                 
+                # Cancel any previous pending open app callbacks
+                if hasattr(self, '_open_app_after_id'):
+                    self.root.after_cancel(self._open_app_after_id)
+                
                 # Start main application after delay
-                self.root.after(1500, lambda: self.abrir_aplicacao_principal(user_data))
+                self._open_app_after_id = self.root.after(1500, lambda: self.abrir_aplicacao_principal(user_data))
                 
             else:
                 logger.warning(f"Failed login attempt for user: {username}")

@@ -285,7 +285,7 @@ class Dashboard:
                 stats['total_produtos'] = result[0].get('count', 0) or 0
             
             # Total clientes
-            clientes_query = "SELECT COUNT(*) as count FROM usuarios WHERE tipo = 'cliente'"
+            clientes_query = "SELECT COUNT(*) as count FROM clientes"
             result = execute_query(clientes_query, fetch=True)
             if result:
                 stats['total_clientes'] = result[0].get('count', 0) or 0

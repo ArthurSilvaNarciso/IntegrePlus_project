@@ -98,3 +98,22 @@ def obter_vendas_recentes(limite: int = 10):
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao obter vendas recentes: {e}")
         return []
+
+def obter_vendas_por_periodo(data_inicio=None, data_fim=None):
+    """Retorna vendas agregadas por data dentro do período especificado"""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            query = '''
+                SELECT data, SUM(total) as total_vendas
+                FROM vendas
+                WHERE (? IS NULL OR data >= ?)
+                  AND (? IS NULL OR data <= ?)
+                GROUP BY data
+                ORDER BY data
+            '''
+            cursor.execute(query, (data_inicio, data_inicio, data_fim, data_fim))
+            return cursor.fetchall()
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao obter vendas por período: {e}")
+        return []

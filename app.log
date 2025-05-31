@@ -167,3 +167,62 @@
 2025-05-30 23:06:26,154 - login - INFO - Successful login for user: Arthur
 2025-05-30 23:06:28,681 - database - INFO - Database tables and indices created successfully
 2025-05-30 23:06:47,096 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:35:49,012 - __main__ - INFO - Initializing database...
+2025-05-30 23:35:49,030 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:35:49,031 - __main__ - INFO - Starting modern login window...
+2025-05-30 23:36:07,434 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:36:07,816 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:36:10,480 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:36:39,855 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:36:52,661 - login - INFO - Successful login for user: admin
+2025-05-30 23:36:53,037 - login - INFO - Successful login for user: admin
+2025-05-30 23:37:27,961 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:30:54,974 - __main__ - INFO - Initializing database...
+2025-05-31 08:30:54,986 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:30:54,987 - __main__ - INFO - Starting modern login window...
+2025-05-31 08:48:51,257 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:49:57,679 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:50:03,643 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:51:20,273 - __main__ - INFO - Successful login for user: Arthur
+2025-05-31 08:51:20,484 - __main__ - INFO - Successful login for user: Arthur
+2025-05-31 08:51:21,848 - database - INFO - Database tables and indices created successfully
+2025-05-31 08:51:30,180 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:01:38,666 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:07:27,442 - __main__ - INFO - Initializing database...
+2025-05-31 09:07:27,450 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:07:27,452 - __main__ - INFO - Starting modern login window...
+2025-05-31 09:07:40,442 - login - INFO - Successful login for user: Arthur
+2025-05-31 09:07:42,624 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:08:00,809 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:14:31,440 - __main__ - INFO - Initializing database...
+2025-05-31 09:14:31,447 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:14:31,449 - __main__ - INFO - Starting modern login window...
+2025-05-31 09:14:45,921 - login - INFO - Successful login for user: Arthur
+2025-05-31 09:14:46,132 - login - INFO - Successful login for user: Arthur
+2025-05-31 09:14:47,507 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:15:15,094 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:32:26,485 - __main__ - INFO - Initializing database...
+2025-05-31 09:32:26,491 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:32:26,492 - __main__ - INFO - Starting modern login window...
+2025-05-31 09:34:08,780 - clientes - INFO - Usuário cadastrado com sucesso: rafa
+2025-05-31 09:34:19,512 - login - INFO - Successful login for user: rafa
+2025-05-31 09:34:19,724 - login - INFO - Successful login for user: rafa
+2025-05-31 09:34:21,112 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:35:01,256 - clientes - INFO - Cliente cadastrado: Arthur
+2025-05-31 09:47:39,531 - __main__ - INFO - Initializing database...
+2025-05-31 09:47:39,538 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:47:39,539 - __main__ - INFO - Starting modern login window...
+2025-05-31 09:47:51,494 - login - INFO - Successful login for user: Arthur
+2025-05-31 09:47:53,619 - database - INFO - Database tables and indices created successfully
+2025-05-31 09:49:02,767 - database - INFO - Database tables and indices created successfully
+2025-05-31 10:54:13,419 - __main__ - INFO - Initializing database...
+2025-05-31 10:54:13,427 - database - INFO - Database tables and indices created successfully
+2025-05-31 10:54:13,428 - __main__ - INFO - Starting modern login window...
+2025-05-31 10:54:24,747 - login - INFO - Successful login for user: Arthur
+2025-05-31 10:54:24,960 - login - INFO - Successful login for user: Arthur
+2025-05-31 10:54:26,874 - database - INFO - Database tables and indices created successfully
+2025-05-31 11:18:25,292 - __main__ - INFO - Initializing database...
+2025-05-31 11:18:25,302 - database - INFO - Database tables and indices created successfully
+2025-05-31 11:18:25,304 - __main__ - INFO - Starting modern login window...
+2025-05-31 11:19:08,888 - login - INFO - Successful login for user: Arthur
+2025-05-31 11:19:11,091 - database - INFO - Database tables and indices created successfully

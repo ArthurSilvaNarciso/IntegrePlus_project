@@ -4,6 +4,7 @@ from typing import List, Dict, Optional, Tuple
 import tkinter as tk
 from tkinter import ttk, messagebox
 import produtos
+import clientes
 import pandas as pd
 from decimal import Decimal
 
@@ -93,32 +94,46 @@ def calcular_total_vendas_periodo(data_inicio: str, data_fim: str) -> float:
         return 0.0
 
 def gui_registrar_venda(tela_cheia: bool = False) -> None:
-    """Interface gráfica para registrar vendas"""
+    """Modernized interface gráfica para registrar vendas com cálculo de total e troco"""
     def salvar():
         try:
-            produto_id = int(entry_id.get())
+            produto_nome = combo_produto.get()
+            cliente_nome = combo_cliente.get()
             quantidade = int(entry_quantidade.get())
             forma_pagamento = var_pagamento.get()
-            cliente_id = entry_cliente.get() if entry_cliente.get() else None
             
-            # Verificar estoque e preço
-            produto_query = 'SELECT quantidade, preco FROM produtos WHERE id = ?'
-            produto_result = execute_query(produto_query, (produto_id,), fetch=True)
-            
-            if not produto_result:
+            # Buscar produto pelo nome para obter id e preço
+            produtos_lista = produtos.listar_produtos()
+            produto = next((p for p in produtos_lista if p[1] == produto_nome), None)
+            if not produto:
                 messagebox.showerror("Erro", "Produto não encontrado!")
                 return
-                
-            estoque = produto_result[0]['quantidade']
-            preco = produto_result[0]['preco']
+            
+            produto_id = produto[0]
+            preco_unitario = produto[3]
+            estoque = produto[2]
+            
             if estoque < quantidade:
                 messagebox.showerror("Erro", "Quantidade insuficiente em estoque!")
                 return
             
-            resultado = registrar_venda(produto_id, quantidade, preco, 
-                                      cliente_id, forma_pagamento)
+            # Buscar cliente pelo nome para obter id
+            clientes_lista = clientes.listar_clientes()
+            cliente = next((c for c in clientes_lista if c[1] == cliente_nome), None)
+            cliente_id = cliente[0] if cliente else None
+            
+            total = quantidade * preco_unitario
+            valor_pago = float(entry_valor_pago.get())
+            troco = valor_pago - total
+            
+            if troco < 0:
+                messagebox.showerror("Erro", "Valor pago insuficiente!")
+                return
+            
+            resultado = registrar_venda(produto_id, quantidade, preco_unitario, 
+                                       cliente_id, forma_pagamento)
             if resultado == "Venda registrada com sucesso.":
-                messagebox.showinfo("Sucesso", resultado)
+                messagebox.showinfo("Sucesso", f"{resultado}\nTroco: R$ {troco:.2f}")
                 janela.destroy()
             else:
                 messagebox.showerror("Erro", resultado)
@@ -130,46 +145,48 @@ def gui_registrar_venda(tela_cheia: bool = False) -> None:
 
     janela = tk.Toplevel()
     janela.title("Registrar Venda")
-    janela.geometry("800x600" if tela_cheia else "400x300")
+    janela.geometry("800x600" if tela_cheia else "400x400")
     janela.configure(bg="#2c3e50")
 
     frame = tk.Frame(janela, bg="#34495e", pady=20, padx=20)
     frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-    # Lista de produtos
+    # Combobox de produtos
     produtos_lista = produtos.listar_produtos()
-    produtos_info = [f"ID: {p[0]} - {p[1]} (Estoque: {p[2]}, Preço: R${p[3]:.2f})" 
-                    for p in produtos_lista]
+    produtos_nomes = [p[1] for p in produtos_lista]
 
-    tk.Label(frame, text="Produtos Disponíveis:", bg="#34495e", 
-             fg="white", font=("Arial", 12)).pack(pady=5)
-    lista_produtos = tk.Listbox(frame, width=40, height=5, font=("Arial", 12))
-    for produto in produtos_info:
-        lista_produtos.insert(tk.END, produto)
-    lista_produtos.pack(pady=10)
+    tk.Label(frame, text="Produto:", bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
+    combo_produto = ttk.Combobox(frame, values=produtos_nomes, font=("Arial", 12))
+    combo_produto.pack(pady=5)
 
-    campos = [
-        ("ID do Produto:", entry_id := tk.Entry(frame, font=("Arial", 12))),
-        ("Quantidade:", entry_quantidade := tk.Entry(frame, font=("Arial", 12))),
-        ("ID do Cliente (opcional):", entry_cliente := tk.Entry(frame, font=("Arial", 12)))
-    ]
+    # Combobox de clientes
+    clientes_lista = clientes.listar_clientes()
+    clientes_nomes = [c[1] for c in clientes_lista]
 
-    for texto, entry in campos:
-        tk.Label(frame, text=texto, bg="#34495e", 
-                fg="white", font=("Arial", 12)).pack(pady=5)
-        entry.pack(pady=5)
+    tk.Label(frame, text="Cliente (opcional):", bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
+    combo_cliente = ttk.Combobox(frame, values=clientes_nomes, font=("Arial", 12))
+    combo_cliente.pack(pady=5)
 
-    tk.Label(frame, text="Forma de Pagamento:", bg="#34495e", 
-             fg="white", font=("Arial", 12)).pack(pady=5)
+    # Quantidade
+    tk.Label(frame, text="Quantidade:", bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
+    entry_quantidade = tk.Entry(frame, font=("Arial", 12))
+    entry_quantidade.pack(pady=5)
+
+    # Valor pago
+    tk.Label(frame, text="Valor Pago (R$):", bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
+    entry_valor_pago = tk.Entry(frame, font=("Arial", 12))
+    entry_valor_pago.pack(pady=5)
+
+    # Forma de pagamento
+    tk.Label(frame, text="Forma de Pagamento:", bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
     var_pagamento = tk.StringVar(value="Dinheiro")
     opcoes = ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "PIX"]
     menu = ttk.OptionMenu(frame, var_pagamento, *opcoes)
     menu.pack(pady=5)
 
-    tk.Button(frame, text="Registrar", command=salvar, 
-              bg="#27ae60", fg="white", font=("Arial", 12)).pack(pady=15)
-    tk.Button(frame, text="Voltar", command=janela.destroy, 
-              bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
+    # Botões
+    tk.Button(frame, text="Registrar", command=salvar, bg="#27ae60", fg="white", font=("Arial", 12)).pack(pady=15)
+    tk.Button(frame, text="Voltar", command=janela.destroy, bg="#34495e", fg="white", font=("Arial", 12)).pack(pady=5)
 
 def gui_listar_vendas(tela_cheia: bool = False) -> None:
     """Interface gráfica para listar vendas"""

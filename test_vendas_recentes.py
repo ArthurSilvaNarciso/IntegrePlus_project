@@ -1,6 +1,6 @@
 import sqlite3
 from relatorios import obter_vendas_recentes
-from database import conectar
+from database import get_connection
 
 def test_obter_vendas_recentes():
     """Test the recent sales retrieval functionality"""
@@ -30,7 +30,7 @@ def test_obter_vendas_recentes():
         # Test database connection error handling
         print("\nTesting error handling:")
         try:
-            with conectar() as conn:
+            with get_connection() as conn:
                 cursor = conn.cursor()
                 # Check if tables exist
                 cursor.execute("""

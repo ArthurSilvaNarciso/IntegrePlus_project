@@ -90,7 +90,7 @@ def cadastrar_usuario(username: str, senha: str, email: str, permissao: str = 'F
         # Insert user
         query = '''
         INSERT INTO usuarios (
-            username, password, email, permissao, data_cadastro, ultima_atualizacao
+            username, senha, email, permissao, data_criacao, ultimo_login
         ) VALUES (?, ?, ?, ?, ?, ?)
         '''
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -100,7 +100,7 @@ def cadastrar_usuario(username: str, senha: str, email: str, permissao: str = 'F
             email,
             permissao,
             now,
-            now
+            None
         )
         
         execute_query(query, params)

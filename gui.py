@@ -418,14 +418,26 @@ class IntegrePlusGUI:
         ttk.Label(form_frame, text="Cliente:").grid(row=0, column=0, padx=5, pady=5)
         self.cliente_var = tk.StringVar()
         cliente_cb = ttk.Combobox(form_frame, textvariable=self.cliente_var)
-        cliente_cb['values'] = [c[1] for c in clientes.listar_clientes()]
+        clientes_list = clientes.listar_clientes()
+        cliente_cb['values'] = [c['nome'] if isinstance(c, dict) else c[1] for c in clientes_list]
         cliente_cb.grid(row=0, column=1, padx=5, pady=5)
 
         # Produto
         ttk.Label(form_frame, text="Produto:").grid(row=1, column=0, padx=5, pady=5)
         self.produto_var = tk.StringVar()
         produto_cb = ttk.Combobox(form_frame, textvariable=self.produto_var)
-        produto_cb['values'] = [p[1] for p in produtos.listar_produtos()]
+        produtos_list = produtos.listar_produtos()
+        # Defensive check for dict or tuple and handle KeyError
+        produto_names = []
+        for p in produtos_list:
+            try:
+                if isinstance(p, dict):
+                    produto_names.append(p['nome'])
+                else:
+                    produto_names.append(p[1])
+            except (KeyError, IndexError):
+                continue
+        produto_cb['values'] = produto_names
         produto_cb.grid(row=1, column=1, padx=5, pady=5)
 
         # Quantidade
@@ -462,7 +474,17 @@ class IntegrePlusGUI:
     def mostrar_dashboard(self):
         """Show dashboard interface"""
         self.limpar_conteudo()
-        self.criar_dashboard(self.conteudo_frame)
+        try:
+            self.criar_dashboard(self.conteudo_frame)
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao atualizar gráfico de estoque: {str(e)}",
+                type_='error'
+            )
+            self.notification_manager.show_notification(
+                f"Erro ao atualizar gráfico de vendas: {str(e)}",
+                type_='error'
+            )
 
     def mostrar_relatorios(self):
         """Show reports interface"""
@@ -570,7 +592,23 @@ class IntegrePlusGUI:
                     self.tabela_produtos.delete(item)
                 
                 for produto in produtos.listar_produtos():
-                    self.tabela_produtos.insert('', 'end', values=produto)
+                    # Normalize produto to tuple of values matching columns
+                    if isinstance(produto, dict):
+                        values = (
+                            produto.get('id', ''),
+                            produto.get('nome', ''),
+                            produto.get('quantidade', ''),
+                            f"R$ {produto.get('preco', 0):.2f}" if produto.get('preco') is not None else '',
+                            produto.get('validade', ''),
+                            produto.get('categoria', ''),
+                            produto.get('codigo_barras', ''),
+                            produto.get('fornecedor_id', '')
+                        )
+                    elif isinstance(produto, (list, tuple)):
+                        values = produto
+                    else:
+                        values = (produto,)
+                    self.tabela_produtos.insert('', 'end', values=values)
             except tk.TclError:
                 # Widget has been destroyed, skip loading
                 pass
@@ -583,7 +621,20 @@ class IntegrePlusGUI:
                     self.tabela_clientes.delete(item)
                 
                 for cliente in clientes.listar_clientes():
-                    self.tabela_clientes.insert('', 'end', values=cliente)
+                    # Normalize cliente to tuple of values matching columns
+                    if isinstance(cliente, dict):
+                        values = (
+                            cliente.get('id', ''),
+                            cliente.get('nome', ''),
+                            cliente.get('email', ''),
+                            cliente.get('telefone', ''),
+                            cliente.get('endereco', '')
+                        )
+                    elif isinstance(cliente, (list, tuple)):
+                        values = cliente
+                    else:
+                        values = (cliente,)
+                    self.tabela_clientes.insert('', 'end', values=values)
             except tk.TclError:
                 # Widget has been destroyed, skip loading
                 pass
@@ -789,11 +840,14 @@ class IntegrePlusGUI:
             import login
             login.main()
 
-    def main_gui(self):
+    def main_gui(self, fullscreen=False):
         """Initialize main GUI"""
         self.root = tk.Tk()
         self.root.title("Integre+ Adegas e Suplementos")
-        self.root.attributes('-fullscreen', True)
+        if fullscreen:
+            self.root.attributes('-fullscreen', True)
+        else:
+            self.root.geometry("1024x768")
 
         # Initialize style
         self.estilo = ttk.Style()
@@ -916,6 +970,14 @@ def gui_login():
     ModernButton(
         frame,
         text="❌ Sair",
+        command=login.destroy,
+        width=25
+    ).pack(pady=10)
+
+    # Add close button to login screen
+    ModernButton(
+        frame,
+        text="❌ Fechar Aplicativo",
         command=login.destroy,
         width=25
     ).pack(pady=10)

@@ -533,8 +533,65 @@ class ModernLoginWindow:
     def abrir_cadastro(self):
         """Open user registration"""
         try:
-            # For now, show a message that registration is not implemented
-            self.show_notification("Funcionalidade de cadastro em desenvolvimento", 'info')
+            import tkinter as tk
+            from tkinter import ttk, messagebox
+            from clientes import cadastrar_usuario, UserError, PasswordError, validar_email, validar_senha
+            from utils import ModernButton
+
+            def salvar_usuario():
+                username = entry_username.get().strip()
+                email = entry_email.get().strip()
+                senha = entry_password.get().strip()
+                senha_confirm = entry_password_confirm.get().strip()
+
+                if not username or not email or not senha or not senha_confirm:
+                    messagebox.showwarning("Aviso", "Todos os campos são obrigatórios.")
+                    return
+
+                if senha != senha_confirm:
+                    messagebox.showerror("Erro", "As senhas não coincidem.")
+                    return
+
+                try:
+                    validar_email(email)
+                    validar_senha(senha)
+                    cadastrar_usuario(username, senha, email)
+                    messagebox.showinfo("Sucesso", "Usuário cadastrado com sucesso!")
+                    janela.destroy()
+                except UserError as ue:
+                    messagebox.showerror("Erro", str(ue))
+                except PasswordError as pe:
+                    messagebox.showerror("Erro", str(pe))
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao cadastrar usuário: {e}")
+
+            janela = tk.Toplevel(self.root)
+            janela.title("Cadastro de Usuário")
+            janela.geometry("400x400")
+            janela.configure(bg=self.colors['background'])
+
+            frame = ttk.Frame(janela, padding=20)
+            frame.pack(fill='both', expand=True)
+
+            ttk.Label(frame, text="Nome de Usuário:").pack(anchor='w', pady=(0, 5))
+            entry_username = ttk.Entry(frame, width=30)
+            entry_username.pack(pady=(0, 15))
+
+            ttk.Label(frame, text="Email:").pack(anchor='w', pady=(0, 5))
+            entry_email = ttk.Entry(frame, width=30)
+            entry_email.pack(pady=(0, 15))
+
+            ttk.Label(frame, text="Senha:").pack(anchor='w', pady=(0, 5))
+            entry_password = ttk.Entry(frame, width=30, show="*")
+            entry_password.pack(pady=(0, 15))
+
+            ttk.Label(frame, text="Confirmar Senha:").pack(anchor='w', pady=(0, 5))
+            entry_password_confirm = ttk.Entry(frame, width=30, show="*")
+            entry_password_confirm.pack(pady=(0, 15))
+
+            ModernButton(frame, text="Cadastrar", command=salvar_usuario, width=20).pack(pady=(10, 5))
+            ModernButton(frame, text="Cancelar", command=janela.destroy, width=20).pack()
+
         except Exception as e:
             logger.error(f"Error opening registration: {e}")
             self.show_notification("Erro ao abrir cadastro", 'error')

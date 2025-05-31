@@ -128,7 +128,7 @@ def validar_dados_produto(nome: str, quantidade: str, preco: str, validade: str)
 # ================= INTERFACE GRÁFICA =================
 
 def gui_cadastrar_produto(tela_cheia=False):
-    """GUI for creating a new product"""
+    """Modernized GUI for creating a new product with improved layout and validation feedback"""
     config = get_config()
     theme = config['themes']['light']
     
@@ -149,7 +149,9 @@ def gui_cadastrar_produto(tela_cheia=False):
                 quantidade=int(quantidade),
                 preco=float(preco),
                 validade=validade,
-                categoria=var_categoria.get() if var_categoria.get() != "Selecione..." else None
+                categoria=var_categoria.get() if var_categoria.get() != "Selecione..." else None,
+                codigo_barras=entry_codigo_barras.get().strip() or None,
+                fornecedor_id=int(entry_fornecedor.get().strip()) if entry_fornecedor.get().strip().isdigit() else None
             )
             logger.info(f"Produto cadastrado: {nome}")
             messagebox.showinfo("Sucesso", "Produto cadastrado com sucesso!")
@@ -169,12 +171,21 @@ def gui_cadastrar_produto(tela_cheia=False):
     # Add category selection
     categorias = ["Selecione...", "Bebidas", "Suplementos", "Outros"]
     var_categoria = tk.StringVar(value=categorias[0])
-    
+
+    entry_nome = tk.Entry(frame, font=("Arial", 12), width=30)
+    entry_quantidade = tk.Entry(frame, font=("Arial", 12), width=30)
+    entry_preco = tk.Entry(frame, font=("Arial", 12), width=30)
+    entry_validade = tk.Entry(frame, font=("Arial", 12), width=30)
+    entry_codigo_barras = tk.Entry(frame, font=("Arial", 12), width=30)
+    entry_fornecedor = tk.Entry(frame, font=("Arial", 12), width=30)
+
     campos = [
-        ("Nome:", entry_nome := tk.Entry(frame, font=("Arial", 12), width=30)),
-        ("Quantidade:", entry_quantidade := tk.Entry(frame, font=("Arial", 12), width=30)),
-        ("Preço:", entry_preco := tk.Entry(frame, font=("Arial", 12), width=30)),
-        ("Validade (dd/mm/aaaa):", entry_validade := tk.Entry(frame, font=("Arial", 12), width=30)),
+        ("Nome:", entry_nome),
+        ("Quantidade:", entry_quantidade),
+        ("Preço:", entry_preco),
+        ("Validade (dd/mm/aaaa):", entry_validade),
+        ("Código de Barras:", entry_codigo_barras),
+        ("Fornecedor ID:", entry_fornecedor),
         ("Categoria:", ttk.OptionMenu(frame, var_categoria, *categorias))
     ]
 

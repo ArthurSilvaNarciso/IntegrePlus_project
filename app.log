@@ -240,3 +240,17 @@
 2025-05-31 12:29:45,300 - __main__ - INFO - Starting modern login window...
 2025-05-31 12:29:55,343 - login - INFO - Successful login for user: Arthur
 2025-05-31 12:29:57,492 - database - INFO - Database tables and indices created successfully
+2025-05-31 13:10:11,243 - __main__ - INFO - Initializing database...
+2025-05-31 13:10:11,255 - database - INFO - Database tables and indices created successfully
+2025-05-31 13:10:11,257 - __main__ - INFO - Starting modern login window...
+2025-05-31 13:10:27,259 - login - INFO - Successful login for user: Arthur
+2025-05-31 13:10:28,816 - database - INFO - Database tables and indices created successfully
+2025-05-31 13:16:52,760 - __main__ - INFO - Initializing database...
+2025-05-31 13:16:52,769 - database - INFO - Database tables and indices created successfully
+2025-05-31 13:16:52,770 - __main__ - INFO - Starting modern login window...
+2025-05-31 13:17:35,622 - login - INFO - Successful login for user: Arthur
+2025-05-31 13:17:37,794 - database - INFO - Database tables and indices created successfully
+2025-05-31 13:18:43,431 - produtos - INFO - Produto cadastrado: Vodka
+2025-05-31 13:19:22,109 - produtos - INFO - Produto cadastrado: Whey
+2025-05-31 13:20:45,796 - clientes - INFO - Cliente cadastrado: Rafaela
+2025-05-31 13:20:55,367 - database - INFO - Database tables and indices created successfully

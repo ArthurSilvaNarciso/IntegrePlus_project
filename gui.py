@@ -139,8 +139,8 @@ class IntegrePlusGUI:
         try:
             dados = produtos.listar_produtos()
             if dados:
-                nomes = [d[1] for d in dados]
-                qtds = [d[2] for d in dados]
+                nomes = [d['nome'] for d in dados]
+                qtds = [d['quantidade'] for d in dados]
                 
                 ax.clear()
                 bars = ax.bar(nomes, qtds, color=THEMES[self.tema_atual]['accent'])

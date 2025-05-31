@@ -1,0 +1,169 @@
+2025-05-30 13:25:58,095 [ERROR] database: Database connection error: no such column: categoria
+2025-05-30 13:27:09,282 [ERROR] database: Database connection error: no such column: categoria
+2025-05-30 13:30:42,334 [INFO] __main__: Successfully added categoria column to produtos table
+2025-05-30 13:31:06,923 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:41:35,291 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:41:36,080 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:41:41,253 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:41:47,161 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:42:09,480 [ERROR] database: Database connection error: table produtos has no column named codigo_barras
+2025-05-30 13:42:09,480 [ERROR] produtos: Erro ao cadastrar produto: Failed to connect to database: table produtos has no column named codigo_barras
+2025-05-30 13:47:39,837 [ERROR] database: Database connection error: duplicate column name: categoria
+2025-05-30 13:47:39,837 [ERROR] __main__: Unexpected error during migration: Failed to connect to database: duplicate column name: categoria
+2025-05-30 13:48:09,923 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:48:10,637 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:48:16,205 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:48:23,128 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:48:25,038 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:49:20,811 [ERROR] database: Database connection error: table produtos has no column named codigo_barras
+2025-05-30 13:49:20,813 [ERROR] produtos: Erro ao cadastrar produto: Failed to connect to database: table produtos has no column named codigo_barras
+2025-05-30 13:55:10,057 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:55:10,730 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:55:18,923 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:55:23,710 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:55:39,614 [ERROR] database: Database connection error: table produtos has no column named codigo_barras
+2025-05-30 13:55:39,614 [ERROR] produtos: Erro ao cadastrar produto: Failed to connect to database: table produtos has no column named codigo_barras
+2025-05-30 13:56:28,951 [INFO] __main__: Database tables and indices created successfully
+2025-05-30 13:56:47,359 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:56:48,034 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:56:52,563 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:56:54,717 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:57:09,733 [ERROR] database: Database connection error: table produtos has no column named codigo_barras
+2025-05-30 13:57:09,733 [ERROR] produtos: Erro ao cadastrar produto: Failed to connect to database: table produtos has no column named codigo_barras
+2025-05-30 13:58:02,830 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:58:03,489 [INFO] database: Database tables and indices created successfully
+2025-05-30 13:58:08,019 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:58:10,513 [ERROR] database: Database connection error: no such column: codigo_barras
+2025-05-30 13:58:27,213 [ERROR] database: Database connection error: table produtos has no column named codigo_barras
+2025-05-30 13:58:27,213 [ERROR] produtos: Erro ao cadastrar produto: Failed to connect to database: table produtos has no column named codigo_barras
+2025-05-30 17:46:17,523 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:46:18,074 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:54:11,973 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:54:12,990 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:54:20,181 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:20,181 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:21,135 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:21,135 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:21,276 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:21,277 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:23,050 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:23,051 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:23,270 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:23,270 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:23,434 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:23,434 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:23,570 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:23,570 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:23,740 [ERROR] database: Database connection error: no such column: permissao
+2025-05-30 17:54:23,740 [ERROR] clientes: Erro de banco de dados na autenticação: Failed to connect to database: no such column: permissao
+2025-05-30 17:54:52,273 [INFO] __main__: Created backup of usuarios table
+2025-05-30 17:54:52,283 [INFO] __main__: Dropped old usuarios table
+2025-05-30 17:54:52,294 [INFO] __main__: Created new usuarios table with updated schema
+2025-05-30 17:54:52,301 [INFO] __main__: Migrated existing data to new table
+2025-05-30 17:54:52,311 [INFO] __main__: Dropped backup table
+2025-05-30 17:54:52,528 [INFO] __main__: Created default admin user if not exists
+2025-05-30 17:55:01,441 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:55:01,886 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:55:19,781 [WARNING] clientes: Tentativa de login com usuário inexistente: aa
+2025-05-30 17:55:28,529 [WARNING] clientes: Tentativa de login com usuário inexistente: aa
+2025-05-30 17:55:32,400 [WARNING] clientes: Tentativa de login com usuário inexistente: aa
+2025-05-30 17:56:39,814 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:56:40,246 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:56:43,996 [WARNING] clientes: Tentativa de login com usuário inexistente: aa
+2025-05-30 17:57:23,718 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:57:54,734 [ERROR] clientes: Erro ao cadastrar usuário: A senha deve ter pelo menos 8 caracteres
+2025-05-30 17:58:06,267 [ERROR] clientes: Erro ao cadastrar usuário: A senha deve conter pelo menos uma letra maiúscula
+2025-05-30 17:58:37,005 [INFO] clientes: Usuário cadastrado com sucesso: Arthur
+2025-05-30 17:58:37,597 [ERROR] database: Database connection error: UNIQUE constraint failed: usuarios.email
+2025-05-30 17:58:37,597 [ERROR] clientes: Erro ao cadastrar usuário: Failed to connect to database: UNIQUE constraint failed: usuarios.email
+2025-05-30 17:58:37,597 [ERROR] clientes: Erro inesperado ao cadastrar cliente: Failed to connect to database: UNIQUE constraint failed: usuarios.email
+2025-05-30 17:58:52,202 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 17:58:52,202 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 17:59:40,968 [INFO] database: Database tables and indices created successfully
+2025-05-30 17:59:50,017 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 17:59:50,017 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 18:03:06,874 [INFO] database: Database tables and indices created successfully
+2025-05-30 18:03:20,029 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 18:03:20,029 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 18:03:20,381 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 18:03:20,381 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 18:03:21,138 [INFO] database: Database tables and indices created successfully
+2025-05-30 18:03:55,402 [INFO] produtos: Produto cadastrado: coca
+2025-05-30 18:16:31,771 [INFO] database: Database tables and indices created successfully
+2025-05-30 18:16:56,500 [WARNING] clientes: Tentativa de login falha: Arthur
+2025-05-30 18:16:56,500 [WARNING] login: Tentativa de login falha: Arthur
+2025-05-30 18:17:12,572 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 18:17:12,572 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 18:17:12,778 [INFO] clientes: Login bem-sucedido: Arthur
+2025-05-30 18:17:12,778 [INFO] login: Login bem-sucedido: Arthur
+2025-05-30 18:17:13,641 [INFO] database: Database tables and indices created successfully
+2025-05-30 22:25:03,738 - __main__ - INFO - Initializing database...
+2025-05-30 22:25:03,750 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:25:03,751 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:25:04,532 - __main__ - ERROR - Critical error in main: tkinter.Entry.__init__() got multiple values for keyword argument 'font'
+2025-05-30 22:25:29,200 - __main__ - INFO - Initializing database...
+2025-05-30 22:25:29,212 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:25:29,215 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:25:30,053 - __main__ - ERROR - Critical error in main: tkinter.Entry.__init__() got multiple values for keyword argument 'font'
+2025-05-30 22:25:54,067 - __main__ - INFO - Initializing database...
+2025-05-30 22:25:54,078 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:25:54,078 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:42:00,251 - login - ERROR - Error opening registration: 'theme'
+2025-05-30 22:42:01,530 - login - ERROR - Error opening registration: 'theme'
+2025-05-30 22:42:22,195 - database - ERROR - Database connection error: no such column: password
+2025-05-30 22:42:22,196 - login - ERROR - Error verifying credentials: Failed to connect to database: no such column: password
+2025-05-30 22:42:22,197 - login - WARNING - Failed login attempt for user: admin
+2025-05-30 22:42:22,200 - database - ERROR - Database connection error: no such column: password
+2025-05-30 22:42:22,201 - login - ERROR - Error verifying credentials: Failed to connect to database: no such column: password
+2025-05-30 22:42:22,201 - login - WARNING - Failed login attempt for user: admin
+2025-05-30 22:42:24,549 - login - ERROR - Error opening registration: 'theme'
+2025-05-30 22:43:21,224 - __main__ - INFO - Created backup of usuarios table
+2025-05-30 22:43:21,239 - __main__ - INFO - Dropped old usuarios table
+2025-05-30 22:43:21,253 - __main__ - INFO - Created new usuarios table with updated schema
+2025-05-30 22:43:21,266 - __main__ - INFO - Migrated existing data to new table
+2025-05-30 22:43:21,279 - __main__ - INFO - Dropped backup table
+2025-05-30 22:43:21,655 - __main__ - INFO - Created default admin user if not exists
+2025-05-30 22:44:11,702 - __main__ - INFO - Initializing database...
+2025-05-30 22:44:11,722 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:44:11,722 - __main__ - ERROR - Error creating admin user: cannot import name 'hash_password' from 'login' (C:\Users\tutun\OneDrive\Área de Trabalho\integre_plus\login.py)
+2025-05-30 22:44:11,722 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:44:15,814 - login - ERROR - Error opening registration: 'theme'
+2025-05-30 22:44:17,848 - login - ERROR - Error opening registration: 'theme'
+2025-05-30 22:44:48,128 - __main__ - INFO - Initializing database...
+2025-05-30 22:44:48,142 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:44:48,144 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:45:13,139 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:45:13,522 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:45:15,924 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:50:58,031 - __main__ - INFO - Initializing database...
+2025-05-30 22:50:58,045 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:50:58,048 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:51:14,531 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:51:14,924 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:51:17,316 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:51:37,983 - produtos - INFO - Produto cadastrado: aa
+2025-05-30 22:51:48,775 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:59:33,504 - __main__ - INFO - Initializing database...
+2025-05-30 22:59:33,519 - database - INFO - Database tables and indices created successfully
+2025-05-30 22:59:33,521 - __main__ - INFO - Starting modern login window...
+2025-05-30 22:59:56,452 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:59:56,817 - login - INFO - Successful login for user: Arthur
+2025-05-30 22:59:59,226 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:00:57,127 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:02:48,508 - __main__ - INFO - Initializing database...
+2025-05-30 23:02:48,524 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:02:48,526 - __main__ - INFO - Starting modern login window...
+2025-05-30 23:03:04,037 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:03:04,424 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:03:06,019 - __main__ - INFO - Initializing database...
+2025-05-30 23:03:06,035 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:03:06,037 - __main__ - INFO - Starting modern login window...
+2025-05-30 23:03:06,656 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:03:16,293 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:06:10,246 - __main__ - INFO - Initializing database...
+2025-05-30 23:06:10,260 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:06:10,264 - __main__ - INFO - Starting modern login window...
+2025-05-30 23:06:25,761 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:06:26,154 - login - INFO - Successful login for user: Arthur
+2025-05-30 23:06:28,681 - database - INFO - Database tables and indices created successfully
+2025-05-30 23:06:47,096 - database - INFO - Database tables and indices created successfully

@@ -1,13 +1,13 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from tkinter import messagebox
-from database import conectar
+from database import get_connection
 import clientes
 import produtos
 
 def gerar_relatorio_vendas(caminho: str = 'relatorio_vendas.xlsx') -> None:
     try:
-        with conectar() as conn:
+        with get_connection() as conn:
             df = pd.read_sql_query('SELECT * FROM vendas', conn)
         if df.empty:
             messagebox.showinfo("Relatório", "Nenhuma venda registrada.")
@@ -48,7 +48,7 @@ def gerar_relatorio_categoria(caminho: str = 'relatorio_categoria.xlsx') -> None
 
 def grafico_vendas() -> None:
     try:
-        with conectar() as conn:
+        with get_connection() as conn:
             df = pd.read_sql_query('''
                 SELECT data, SUM(quantidade) AS total_vendido 
                 FROM vendas 
@@ -79,3 +79,22 @@ def gerar_relatorio_geral():
         messagebox.showinfo("Relatório Geral", "Todos os relatórios foram gerados com sucesso!")
     except Exception as e:
         messagebox.showerror("Erro", f"Erro ao gerar relatório geral: {e}")
+
+def obter_vendas_recentes(limite: int = 10):
+    """Retorna as vendas mais recentes do banco de dados"""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT v.id, v.data, u.username as cliente, p.nome as produto, 
+                       v.quantidade, v.total
+                FROM vendas v
+                JOIN usuarios u ON v.cliente_id = u.id
+                JOIN produtos p ON v.produto_id = p.id
+                ORDER BY v.data DESC
+                LIMIT ?
+            ''', (limite,))
+            return cursor.fetchall()
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao obter vendas recentes: {e}")
+        return []

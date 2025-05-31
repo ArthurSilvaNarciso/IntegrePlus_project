@@ -4,363 +4,885 @@ from PIL import Image, ImageTk
 import produtos, relatorios, clientes
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import shutil
 import smtplib
-from email.message import EmailMessage
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+import json
 import database
+import os
+from typing import Optional, Dict, List
+import threading
+import queue
+from utils import (
+    THEMES, AsyncTask, ModernButton, Tooltip, 
+    NotificationManager, SearchFrame, 
+    save_user_preferences, load_user_preferences
+)
 
-usuario_logado = None
-permissao_usuario = None
-tema_atual = 'escuro'
-
-def aplicar_tema(style, tema='claro'):
-    if tema == 'claro':
-        style.theme_use('default')
-        root.tk_setPalette(background='white', foreground='black')
-        style.configure('.', background='white', foreground='black')
-        style.configure('TButton', background='#3498db', foreground='white', font=("Arial", 12))
-    else:
-        style.theme_use('clam')
-        root.tk_setPalette(background='#2c3e50', foreground='white')
-        style.configure('.', background='#2c3e50', foreground='white')
-        style.configure('TButton', background='#34495e', foreground='white', font=("Arial", 12))
-
-def alternar_tema():
-    global tema_atual
-    tema_atual = 'escuro' if tema_atual == 'claro' else 'claro'
-    aplicar_tema(estilo, tema_atual)
-    root.configure(bg='white' if tema_atual == 'claro' else '#2c3e50')
-
-def backup_banco():
-    try:
-        nome_backup = f'backup_integre_plus_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db'
-        shutil.copy('integre_plus.db', nome_backup)
-        messagebox.showinfo("Backup", f"Backup criado com sucesso: {nome_backup}")
-    except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao criar backup: {str(e)}")
-
-def relatorio_validade():
-    try:
-        proximos = []
-        for prod in produtos.listar_produtos():
-            try:
-                validade = datetime.strptime(prod[4], '%d/%m/%Y')
-                if validade <= datetime.now() + timedelta(days=30):
-                    proximos.append(prod)
-            except ValueError:
-                continue
-        df = pd.DataFrame(proximos, columns=["ID", "Nome", "Qtd", "Preço", "Validade"])
-        df.to_excel('produtos_vencimento.xlsx', index=False)
-        messagebox.showinfo("Relatório", "Relatório de validade gerado com sucesso!")
-    except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao gerar relatório: {str(e)}")
-
-def dashboard():
-    try:
-        dados = produtos.listar_produtos()
-        if not dados:
-            messagebox.showinfo("Dashboard", "Nenhum produto cadastrado para exibir.")
-            return
-        nomes = [d[1] for d in dados]
-        quantidades = [d[2] for d in dados]
-        plt.figure(figsize=(10, 6))
-        plt.bar(nomes, quantidades, color='skyblue')
-        plt.xlabel('Produtos')
-        plt.ylabel('Quantidade')
-        plt.title('Estoque Atual')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        plt.show()
-    except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao gerar dashboard: {str(e)}")
-
-def importar_produtos_csv():
-    caminho = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-    if caminho:
-        try:
-            df = pd.read_csv(caminho)
-            for _, row in df.iterrows():
-                produtos.cadastrar_produto(row['Nome'], int(row['Qtd']), float(row['Preço']), row['Validade'])
-            messagebox.showinfo("Importação", "Produtos importados com sucesso!")
-        except Exception as e:
-            messagebox.showerror("Erro", f"Erro na importação: {str(e)}")
-
-def enviar_email_relatorio(destinatario, arquivo):
-    try:
-        msg = EmailMessage()
-        msg['Subject'] = 'Relatório Integre+'
-        msg['From'] = 'seuemail@gmail.com'
-        msg['To'] = destinatario
-        msg.set_content('Segue em anexo o relatório.')
-
-        with open(arquivo, 'rb') as f:
-            msg.add_attachment(f.read(), maintype='application', subtype='octet-stream', filename=arquivo)
-
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login('seuemail@gmail.com', 'suasenha')
-            smtp.send_message(msg)
-
-        messagebox.showinfo("Email", "Relatório enviado com sucesso!")
-    except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao enviar e-mail: {str(e)}")
-
-def abrir_cadastro():
-    cadastro = tk.Toplevel()
-    cadastro.title("Cadastro de Usuário")
-    cadastro.attributes('-fullscreen', True)
-    cadastro.config(bg="#2c3e50")
-
-    frame = tk.Frame(cadastro, bg="#34495e")
-    frame.place(relx=0.5, rely=0.5, anchor="center")
-
-    tk.Label(frame, text="Usuário", font=("Arial", 16), bg="#34495e", fg="white").pack(pady=10)
-    entry_user = tk.Entry(frame, font=("Arial", 16), width=30)
-    entry_user.pack(pady=10)
-
-    tk.Label(frame, text="Senha", font=("Arial", 16), bg="#34495e", fg="white").pack(pady=10)
-    entry_pass = tk.Entry(frame, show="*", font=("Arial", 16), width=30)
-    entry_pass.pack(pady=10)
-
-    tk.Label(frame, text="Permissão", font=("Arial", 16), bg="#34495e", fg="white").pack(pady=10)
-    var_permissao = tk.StringVar(value="Funcionario")
-    ttk.OptionMenu(frame, var_permissao, "Funcionario", "Admin", "Funcionario").pack(pady=10)
-
-    def efetuar_cadastro():
-        user = entry_user.get()
-        senha = entry_pass.get()
-        permissao = var_permissao.get()
-        if not user or not senha:
-            messagebox.showerror("Erro", "Preencha todos os campos!")
-            return
-        try:
-            clientes.cadastrar_usuario(user, senha, permissao)
-            messagebox.showinfo("Sucesso", "Usuário cadastrado com sucesso!")
-            cadastro.destroy()
-        except Exception as e:
-            messagebox.showerror("Erro", str(e))
-
-    tk.Button(frame, text="Cadastrar", command=efetuar_cadastro, font=("Arial", 16), bg="#3498db", fg="white", width=20).pack(pady=20)
-    tk.Button(frame, text="Voltar", command=cadastro.destroy, font=("Arial", 12), bg="#95a5a6", fg="white", width=20).pack()
-
-def atualizar_estoque():
-    # Função para atualizar o painel lateral de estoque
-    if 'estoque_frame' in globals():
-        produtos.gui_listar_produtos(parent=estoque_frame)
-
-def main_gui():
-    global root, estilo, estoque_frame
-    root = tk.Tk()
-    root.title("Integre+ Adegas e Suplementos")
-    root.attributes('-fullscreen', True)
-
-    estilo = ttk.Style()
-    aplicar_tema(estilo, tema_atual)
-
-    # Cabeçalho
-    cabecalho = tk.Frame(root, bg="#2980b9", height=70)
-    cabecalho.pack(fill="x")
-    cabecalho.pack_propagate(False)
-
-    # Título do sistema
-    tk.Label(cabecalho, text="Integre+ Adegas e Suplementos", 
-             font=("Arial", 22, "bold"), bg="#2980b9", fg="white").pack(side="left", padx=30, pady=15)
-
-    # Informações do usuário logado
-    info_usuario = f"Usuário: {usuario_logado} | Permissão: {permissao_usuario}"
-    tk.Label(cabecalho, text=info_usuario, 
-             font=("Arial", 12), bg="#2980b9", fg="white").pack(side="left", padx=20, pady=15)
-
-    # Botões do cabeçalho
-    tk.Button(cabecalho, text="Tema Claro/Escuro", command=alternar_tema, 
-              bg="#1abc9c", fg="white", font=("Arial", 12)).pack(side="right", padx=10, pady=15)
-    
-    tk.Button(cabecalho, text="Logout", command=lambda: (root.destroy(), gui_login()), 
-              bg="#c0392b", fg="white", font=("Arial", 12)).pack(side="right", padx=10, pady=15)
-
-    # Corpo principal
-    corpo = tk.Frame(root, bg="#ecf0f1")
-    corpo.pack(fill="both", expand=True)
-
-    # Menu lateral esquerdo
-    menu_frame = tk.Frame(corpo, bg="#34495e", width=250)
-    menu_frame.pack(side="left", fill="y")
-    menu_frame.pack_propagate(False)
-
-    # Título do menu
-    tk.Label(menu_frame, text="MENU PRINCIPAL", 
-             font=("Arial", 16, "bold"), bg="#34495e", fg="white").pack(pady=20)
-
-    # Botões do menu principal
-    botoes_principais = [
-        ("📦 Cadastrar Produto", lambda: produtos.gui_cadastrar_produto(tela_cheia=True)),
-        ("📊 Dashboard", dashboard),
-        ("📈 Relatório Validade", relatorio_validade),
-        ("💾 Backup Banco", backup_banco),
-        ("📥 Importar CSV", importar_produtos_csv)
-    ]
-
-    # Adicionar botões específicos para Admin
-    if permissao_usuario == "Admin":
-        botoes_principais.extend([
-            ("👤 Cadastrar Usuário", abrir_cadastro),
-            ("👥 Gerenciar Clientes", clientes.gui_listar_clientes)
-        ])
-
-    for texto, comando in botoes_principais:
-        btn = tk.Button(menu_frame, text=texto, command=comando,
-                       bg="#3498db", fg="white", font=("Arial", 12),
-                       width=25, height=2, relief="flat")
-        btn.pack(pady=5, padx=10, fill="x")
-
-    # Área de conteúdo central
-    conteudo_frame = tk.Frame(corpo, bg="#ecf0f1")
-    conteudo_frame.pack(side="left", fill="both", expand=True)
-
-    # Painel de boas-vindas
-    boas_vindas = tk.Frame(conteudo_frame, bg="#ffffff", relief="raised", bd=2)
-    boas_vindas.pack(fill="both", expand=True, padx=20, pady=20)
-
-    tk.Label(boas_vindas, text=f"Bem-vindo ao Integre+, {usuario_logado}!", 
-             font=("Arial", 24, "bold"), bg="#ffffff", fg="#2c3e50").pack(pady=30)
-
-    tk.Label(boas_vindas, text="Sistema de Gestão para Adegas e Suplementos", 
-             font=("Arial", 16), bg="#ffffff", fg="#7f8c8d").pack(pady=10)
-
-    # Frame para estatísticas rápidas
-    stats_frame = tk.Frame(boas_vindas, bg="#ffffff")
-    stats_frame.pack(pady=30)
-
-    try:
-        # Estatísticas rápidas
-        total_produtos = len(produtos.listar_produtos())
-        total_usuarios = len(clientes.listar_usuarios())
+class IntegrePlusGUI:
+    def __init__(self):
+        self.usuario_logado = None
+        self.permissao_usuario = None
+        self.tema_atual = load_user_preferences().get('tema', 'claro')
+        self.notification_manager = None
+        self.animations_enabled = True  # New flag to enable/disable animations
         
-        # Cards de estatísticas
-        cards = [
-            ("Total de Produtos", total_produtos, "#3498db"),
-            ("Total de Usuários", total_usuarios, "#27ae60"),
-            ("Produtos Baixo Estoque", len(produtos.produtos_estoque_baixo()), "#e74c3c")
+    def aplicar_tema(self, style, tema='claro'):
+        """Apply theme colors to the GUI"""
+        colors = THEMES[tema]
+        style.theme_use('clam')
+        
+        # Configure colors for different widget types
+        style.configure('.',
+            background=colors['background'],
+            foreground=colors['text'])
+            
+        style.configure('TButton',
+            background=colors['accent'],
+            foreground=colors['menu_fg'],
+            font=("Arial", 12))
+            
+        style.configure('Sidebar.TButton',
+            background=colors['menu_bg'],
+            foreground=colors['menu_fg'],
+            font=("Arial", 12, "bold"))
+            
+        style.configure('Card.TFrame',
+            background=colors['card_bg'])
+            
+        # Configure hover styles
+        style.map('TButton',
+            background=[('active', colors['secondary'])],
+            foreground=[('active', colors['menu_fg'])])
+            
+        self.root.configure(bg=colors['background'])
+        save_user_preferences({'tema': tema})
+
+    def alternar_tema(self):
+        """Toggle between light and dark themes"""
+        self.tema_atual = 'escuro' if self.tema_atual == 'claro' else 'claro'
+        self.aplicar_tema(self.estilo, self.tema_atual)
+        self.notification_manager.show_notification(
+            f"Tema alterado para {self.tema_atual}",
+            type_='info'
+        )
+        # Animate theme change if enabled
+        if self.animations_enabled:
+            self._animate_theme_change()
+
+    def _animate_theme_change(self):
+        """Simple fade animation for theme change"""
+        alpha = 0.0
+        step = 0.1
+        def fade_in():
+            nonlocal alpha
+            alpha += step
+            if alpha > 1.0:
+                self.root.attributes('-alpha', 1.0)
+                return
+            self.root.attributes('-alpha', alpha)
+            self.root.after(50, fade_in)
+        self.root.attributes('-alpha', 0.0)
+        fade_in()
+
+    def criar_dashboard(self, parent):
+        """Create an embedded dashboard with charts"""
+        dashboard_frame = ttk.Frame(parent, style='Card.TFrame')
+        dashboard_frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Create figure with subplots
+        fig = plt.figure(figsize=(12, 6))
+        fig.patch.set_facecolor(THEMES[self.tema_atual]['background'])
+        
+        # Product stock chart
+        ax1 = fig.add_subplot(121)
+        self.atualizar_grafico_estoque(ax1)
+        
+        # Sales trend chart
+        ax2 = fig.add_subplot(122)
+        self.atualizar_grafico_vendas(ax2)
+        
+        # Embed the chart
+        canvas = FigureCanvasTkAgg(fig, master=dashboard_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
+        
+        # Add matplotlib toolbar
+        toolbar = NavigationToolbar2Tk(canvas, dashboard_frame)
+        toolbar.update()
+        
+        # Add refresh button
+        refresh_btn = ModernButton(
+            dashboard_frame,
+            text="↻ Atualizar Gráficos",
+            command=lambda: self.atualizar_dashboard(ax1, ax2, canvas)
+        )
+        refresh_btn.pack(pady=10)
+
+        # Add simple fade-in animation for dashboard if enabled
+        if self.animations_enabled:
+            self._fade_in_widget(dashboard_frame)
+        
+        return dashboard_frame
+
+    def _fade_in_widget(self, widget, step=0.1, delay=50):
+        """Fade in a widget by gradually increasing its opacity"""
+        # Tkinter does not support widget opacity, so simulate with gradual packing
+        # This is a placeholder for more complex animation if using other GUI frameworks
+        pass
+
+    def atualizar_grafico_estoque(self, ax):
+        """Update stock level chart"""
+        try:
+            dados = produtos.listar_produtos()
+            if dados:
+                nomes = [d[1] for d in dados]
+                qtds = [d[2] for d in dados]
+                
+                ax.clear()
+                bars = ax.bar(nomes, qtds, color=THEMES[self.tema_atual]['accent'])
+                
+                # Add value labels on top of bars
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                            f'{int(height)}',
+                            ha='center', va='bottom')
+                
+                ax.set_title('Níveis de Estoque', color=THEMES[self.tema_atual]['text'])
+                ax.set_xlabel('Produtos', color=THEMES[self.tema_atual]['text'])
+                ax.set_ylabel('Quantidade', color=THEMES[self.tema_atual]['text'])
+                ax.tick_params(axis='both', colors=THEMES[self.tema_atual]['text'])
+                ax.set_xticks(range(len(nomes)))
+                ax.set_xticklabels(nomes, rotation=45, ha='right')
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao atualizar gráfico de estoque: {str(e)}",
+                type_='error'
+            )
+
+    def atualizar_grafico_vendas(self, ax):
+        """Update sales trend chart"""
+        try:
+            # Get sales data from database (implement this in vendas.py)
+            vendas = relatorios.obter_vendas_por_periodo()
+            if vendas:
+                datas = [v[0] for v in vendas]
+                valores = [v[1] for v in vendas]
+                
+                ax.clear()
+                ax.plot(datas, valores, marker='o', 
+                       color=THEMES[self.tema_atual]['accent'],
+                       linewidth=2)
+                
+                ax.set_title('Tendência de Vendas', color=THEMES[self.tema_atual]['text'])
+                ax.set_xlabel('Data', color=THEMES[self.tema_atual]['text'])
+                ax.set_ylabel('Valor Total (R$)', color=THEMES[self.tema_atual]['text'])
+                ax.tick_params(axis='both', colors=THEMES[self.tema_atual]['text'])
+                ax.grid(True, linestyle='--', alpha=0.7)
+                
+                # Rotate x-axis labels for better readability
+                ax.set_xticklabels(datas, rotation=45, ha='right')
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao atualizar gráfico de vendas: {str(e)}",
+                type_='error'
+            )
+
+    def atualizar_dashboard(self, ax1, ax2, canvas):
+        """Update both dashboard charts"""
+        self.atualizar_grafico_estoque(ax1)
+        self.atualizar_grafico_vendas(ax2)
+        canvas.draw()
+        self.notification_manager.show_notification(
+            "Dashboard atualizado com sucesso!",
+            type_='success'
+        )
+
+    def criar_menu_lateral(self, parent):
+        """Create enhanced sidebar menu with tooltips"""
+        menu_frame = ttk.Frame(parent, style='Card.TFrame')
+        menu_frame.pack(side="left", fill="y")
+
+        # Menu title
+        ttk.Label(menu_frame, 
+                 text="MENU PRINCIPAL",
+                 font=("Arial", 16, "bold"),
+                 foreground=THEMES[self.tema_atual]['text']).pack(pady=20)
+
+        # Menu buttons with tooltips
+        botoes = [
+            ("📦 Produtos", lambda: self.mostrar_produtos(), "Gerenciar produtos"),
+            ("👥 Clientes", lambda: self.mostrar_clientes(), "Gerenciar clientes"),
+            ("💰 Vendas", lambda: self.mostrar_vendas(), "Registrar vendas"),
+            ("📊 Dashboard", lambda: self.mostrar_dashboard(), "Visualizar estatísticas"),
+            ("📈 Relatórios", lambda: self.mostrar_relatorios(), "Gerar relatórios"),
+            ("⚙️ Configurações", lambda: self.mostrar_configuracoes(), "Configurar sistema")
         ]
 
-        for i, (titulo, valor, cor) in enumerate(cards):
-            card = tk.Frame(stats_frame, bg=cor, width=200, height=100)
-            card.grid(row=0, column=i, padx=20, pady=10)
-            card.pack_propagate(False)
+        for texto, comando, tooltip in botoes:
+            btn = ModernButton(
+                menu_frame,
+                text=texto,
+                command=comando,
+                style='Sidebar.TButton',
+                width=20
+            )
+            btn.pack(pady=5, padx=10)
+            Tooltip(btn, tooltip)
+
+        return menu_frame
+
+    def criar_barra_superior(self):
+        """Create enhanced top bar with user info and quick actions"""
+        cabecalho = ttk.Frame(self.root, style='Card.TFrame')
+        cabecalho.pack(fill="x", pady=5)
+
+        # Logo/Title
+        ttk.Label(
+            cabecalho,
+            text="Integre+ Adegas e Suplementos",
+            font=("Arial", 22, "bold"),
+            foreground=THEMES[self.tema_atual]['text']
+        ).pack(side="left", padx=30)
+
+        # User info
+        info_usuario = f"👤 {self.usuario_logado} | 🔑 {self.permissao_usuario}"
+        ttk.Label(
+            cabecalho,
+            text=info_usuario,
+            font=("Arial", 12),
+            foreground=THEMES[self.tema_atual]['text']
+        ).pack(side="left", padx=20)
+
+        # Quick action buttons
+        ModernButton(
+            cabecalho,
+            text="🎨 Tema",
+            command=self.alternar_tema,
+            width=10
+        ).pack(side="right", padx=5)
+
+        ModernButton(
+            cabecalho,
+            text="↻ Atualizar",
+            command=self.atualizar_interface,
+            width=10
+        ).pack(side="right", padx=5)
+
+        ModernButton(
+            cabecalho,
+            text="🚪 Sair",
+            command=self.logout,
+            width=10
+        ).pack(side="right", padx=5)
+
+    def criar_barra_status(self):
+        """Create enhanced status bar with system info"""
+        status_bar = ttk.Frame(self.root, style='Card.TFrame')
+        status_bar.pack(side="bottom", fill="x")
+
+        # System info
+        data_atual = datetime.now().strftime("%d/%m/%Y %H:%M")
+        info = f"⏰ {data_atual} | 👤 {self.usuario_logado} | 💻 Integre+ v2.0"
+        ttk.Label(
+            status_bar,
+            text=info,
+            font=("Arial", 10),
+            foreground=THEMES[self.tema_atual]['text']
+        ).pack(side="left", padx=10, pady=2)
+
+        # Add memory usage or other system stats here
+        # ...
+
+    def mostrar_produtos(self):
+        """Show products management interface"""
+        self.limpar_conteudo()
+        frame = ttk.Frame(self.conteudo_frame, style='Card.TFrame')
+        frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Add search and filter
+        search_frame = SearchFrame(
+            frame,
+            search_callback=self.filtrar_produtos,
+            filters={
+                'categoria': ['Todos', 'Bebidas', 'Suplementos', 'Outros'],
+                'ordenar': ['Nome ↑', 'Nome ↓', 'Preço ↑', 'Preço ↓']
+            }
+        )
+        search_frame.pack(fill='x', padx=10, pady=5)
+
+        # Products table with image preview column
+        self.tabela_produtos = ttk.Treeview(
+            frame,
+            columns=('ID', 'Nome', 'Quantidade', 'Preço', 'Validade', 'Categoria', 'Código de Barras', 'Fornecedor'),
+            show='headings'
+        )
+        
+        for col in self.tabela_produtos['columns']:
+            self.tabela_produtos.heading(col, text=col)
+            self.tabela_produtos.column(col, width=100)
+
+        self.tabela_produtos.pack(fill='both', expand=True, padx=10, pady=5)
+
+        # Action buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill='x', padx=10, pady=5)
+
+        ModernButton(
+            btn_frame,
+            text="➕ Novo Produto",
+            command=lambda: produtos.gui_cadastrar_produto(tela_cheia=True)
+        ).pack(side='left', padx=5)
+
+        ModernButton(
+            btn_frame,
+            text="✏️ Editar",
+            command=self.editar_produto_selecionado
+        ).pack(side='left', padx=5)
+
+        ModernButton(
+            btn_frame,
+            text="❌ Excluir",
+            command=self.excluir_produto_selecionado
+        ).pack(side='left', padx=5)
+
+        # Load initial data
+        self.carregar_produtos()
+
+    def mostrar_clientes(self):
+        """Show customers management interface"""
+        self.limpar_conteudo()
+        frame = ttk.Frame(self.conteudo_frame, style='Card.TFrame')
+        frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Add search
+        search_frame = SearchFrame(
+            frame,
+            search_callback=self.filtrar_clientes
+        )
+        search_frame.pack(fill='x', padx=10, pady=5)
+
+        # Customers table
+        self.tabela_clientes = ttk.Treeview(
+            frame,
+            columns=('ID', 'Nome', 'Email', 'Telefone', 'Endereço'),
+            show='headings'
+        )
+        
+        for col in self.tabela_clientes['columns']:
+            self.tabela_clientes.heading(col, text=col)
+            self.tabela_clientes.column(col, width=100)
+
+        self.tabela_clientes.pack(fill='both', expand=True, padx=10, pady=5)
+
+        # Action buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill='x', padx=10, pady=5)
+
+        ModernButton(
+            btn_frame,
+            text="➕ Novo Cliente",
+            command=lambda: clientes.gui_cadastrar_cliente(tela_cheia=True)
+        ).pack(side='left', padx=5)
+
+        ModernButton(
+            btn_frame,
+            text="✏️ Editar",
+            command=self.editar_cliente_selecionado
+        ).pack(side='left', padx=5)
+
+        ModernButton(
+            btn_frame,
+            text="❌ Excluir",
+            command=self.excluir_cliente_selecionado
+        ).pack(side='left', padx=5)
+
+        # Load initial data
+        self.carregar_clientes()
+
+    def mostrar_vendas(self):
+        """Show sales interface"""
+        self.limpar_conteudo()
+        frame = ttk.Frame(self.conteudo_frame, style='Card.TFrame')
+        frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Sales form
+        form_frame = ttk.LabelFrame(frame, text="Nova Venda")
+        form_frame.pack(fill='x', padx=10, pady=5)
+
+        # Cliente
+        ttk.Label(form_frame, text="Cliente:").grid(row=0, column=0, padx=5, pady=5)
+        self.cliente_var = tk.StringVar()
+        cliente_cb = ttk.Combobox(form_frame, textvariable=self.cliente_var)
+        cliente_cb['values'] = [c[1] for c in clientes.listar_clientes()]
+        cliente_cb.grid(row=0, column=1, padx=5, pady=5)
+
+        # Produto
+        ttk.Label(form_frame, text="Produto:").grid(row=1, column=0, padx=5, pady=5)
+        self.produto_var = tk.StringVar()
+        produto_cb = ttk.Combobox(form_frame, textvariable=self.produto_var)
+        produto_cb['values'] = [p[1] for p in produtos.listar_produtos()]
+        produto_cb.grid(row=1, column=1, padx=5, pady=5)
+
+        # Quantidade
+        ttk.Label(form_frame, text="Quantidade:").grid(row=2, column=0, padx=5, pady=5)
+        self.qtd_var = tk.StringVar()
+        ttk.Entry(form_frame, textvariable=self.qtd_var).grid(row=2, column=1, padx=5, pady=5)
+
+        # Register sale button
+        ModernButton(
+            form_frame,
+            text="💰 Registrar Venda",
+            command=self.registrar_venda
+        ).grid(row=3, column=0, columnspan=2, pady=10)
+
+        # Recent sales
+        sales_frame = ttk.LabelFrame(frame, text="Vendas Recentes")
+        sales_frame.pack(fill='both', expand=True, padx=10, pady=5)
+
+        self.tabela_vendas = ttk.Treeview(
+            sales_frame,
+            columns=('ID', 'Data', 'Cliente', 'Produto', 'Quantidade', 'Total'),
+            show='headings'
+        )
+        
+        for col in self.tabela_vendas['columns']:
+            self.tabela_vendas.heading(col, text=col)
+            self.tabela_vendas.column(col, width=100)
+
+        self.tabela_vendas.pack(fill='both', expand=True, padx=5, pady=5)
+
+        # Load recent sales
+        self.carregar_vendas_recentes()
+
+    def mostrar_dashboard(self):
+        """Show dashboard interface"""
+        self.limpar_conteudo()
+        self.criar_dashboard(self.conteudo_frame)
+
+    def mostrar_relatorios(self):
+        """Show reports interface"""
+        self.limpar_conteudo()
+        frame = ttk.Frame(self.conteudo_frame, style='Card.TFrame')
+        frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Report options
+        options_frame = ttk.LabelFrame(frame, text="Opções de Relatório")
+        options_frame.pack(fill='x', padx=10, pady=5)
+
+        # Date range
+        ttk.Label(options_frame, text="Período:").grid(row=0, column=0, padx=5, pady=5)
+        self.data_inicio = ttk.Entry(options_frame)
+        self.data_inicio.grid(row=0, column=1, padx=5, pady=5)
+        self.data_fim = ttk.Entry(options_frame)
+        self.data_fim.grid(row=0, column=2, padx=5, pady=5)
+
+        # Report type
+        ttk.Label(options_frame, text="Tipo:").grid(row=1, column=0, padx=5, pady=5)
+        self.tipo_relatorio = tk.StringVar(value="vendas")
+        ttk.Radiobutton(options_frame, text="Vendas", variable=self.tipo_relatorio, 
+                       value="vendas").grid(row=1, column=1)
+        ttk.Radiobutton(options_frame, text="Estoque", variable=self.tipo_relatorio, 
+                       value="estoque").grid(row=1, column=2)
+
+        # Generate button
+        ModernButton(
+            options_frame,
+            text="📊 Gerar Relatório",
+            command=self.gerar_relatorio
+        ).grid(row=2, column=0, columnspan=3, pady=10)
+
+        # Preview area
+        preview_frame = ttk.LabelFrame(frame, text="Prévia")
+        preview_frame.pack(fill='both', expand=True, padx=10, pady=5)
+
+        self.preview_text = tk.Text(preview_frame, height=20)
+        self.preview_text.pack(fill='both', expand=True, padx=5, pady=5)
+
+    def mostrar_configuracoes(self):
+        """Show settings interface"""
+        self.limpar_conteudo()
+        frame = ttk.Frame(self.conteudo_frame, style='Card.TFrame')
+        frame.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Appearance settings
+        appearance_frame = ttk.LabelFrame(frame, text="Aparência")
+        appearance_frame.pack(fill='x', padx=10, pady=5)
+
+        ttk.Label(appearance_frame, text="Tema:").grid(row=0, column=0, padx=5, pady=5)
+        tema_var = tk.StringVar(value=self.tema_atual)
+        ttk.Radiobutton(appearance_frame, text="Claro", variable=tema_var, 
+                       value="claro", command=lambda: self.aplicar_tema(self.estilo, "claro")
+                       ).grid(row=0, column=1)
+        ttk.Radiobutton(appearance_frame, text="Escuro", variable=tema_var,
+                       value="escuro", command=lambda: self.aplicar_tema(self.estilo, "escuro")
+                       ).grid(row=0, column=2)
+
+        # Backup settings
+        backup_frame = ttk.LabelFrame(frame, text="Backup")
+        backup_frame.pack(fill='x', padx=10, pady=5)
+
+        ModernButton(
+            backup_frame,
+            text="💾 Fazer Backup",
+            command=self.backup_banco
+        ).pack(pady=10)
+
+        # User settings
+        if self.permissao_usuario == "Admin":
+            user_frame = ttk.LabelFrame(frame, text="Usuários")
+            user_frame.pack(fill='x', padx=10, pady=5)
+
+            ModernButton(
+                user_frame,
+                text="👤 Gerenciar Usuários",
+                command=self.gerenciar_usuarios
+            ).pack(pady=10)
+
+    def limpar_conteudo(self):
+        """Clear content area"""
+        for widget in self.conteudo_frame.winfo_children():
+            widget.destroy()
+
+    def atualizar_interface(self):
+        """Refresh current interface"""
+        if hasattr(self, 'tabela_produtos'):
+            self.carregar_produtos()
+        if hasattr(self, 'tabela_clientes'):
+            self.carregar_clientes()
+        if hasattr(self, 'tabela_vendas'):
+            self.carregar_vendas_recentes()
+        
+        self.notification_manager.show_notification(
+            "Interface atualizada com sucesso!",
+            type_='success'
+        )
+
+    def carregar_produtos(self):
+        """Load products into table"""
+        if hasattr(self, 'tabela_produtos') and self.tabela_produtos.winfo_exists():
+            try:
+                for item in self.tabela_produtos.get_children():
+                    self.tabela_produtos.delete(item)
+                
+                for produto in produtos.listar_produtos():
+                    self.tabela_produtos.insert('', 'end', values=produto)
+            except tk.TclError:
+                # Widget has been destroyed, skip loading
+                pass
+
+    def carregar_clientes(self):
+        """Load customers into table"""
+        if hasattr(self, 'tabela_clientes') and self.tabela_clientes.winfo_exists():
+            try:
+                for item in self.tabela_clientes.get_children():
+                    self.tabela_clientes.delete(item)
+                
+                for cliente in clientes.listar_clientes():
+                    self.tabela_clientes.insert('', 'end', values=cliente)
+            except tk.TclError:
+                # Widget has been destroyed, skip loading
+                pass
+
+    def carregar_vendas_recentes(self):
+        """Load recent sales into table"""
+        if hasattr(self, 'tabela_vendas') and self.tabela_vendas.winfo_exists():
+            try:
+                for item in self.tabela_vendas.get_children():
+                    self.tabela_vendas.delete(item)
+                
+                # Implement this in vendas.py
+                for venda in relatorios.obter_vendas_recentes():
+                    self.tabela_vendas.insert('', 'end', values=venda)
+            except tk.TclError:
+                # Widget has been destroyed, skip loading
+                pass
+
+    def filtrar_produtos(self, termo_busca):
+        """Filter products based on search term"""
+        if hasattr(self, 'tabela_produtos') and self.tabela_produtos.winfo_exists():
+            try:
+                for item in self.tabela_produtos.get_children():
+                    self.tabela_produtos.delete(item)
+                
+                for produto in produtos.buscar_produtos(termo_busca):
+                    self.tabela_produtos.insert('', 'end', values=produto)
+            except tk.TclError:
+                # Widget has been destroyed, skip filtering
+                pass
+
+    def filtrar_clientes(self, termo_busca):
+        """Filter customers based on search term"""
+        if hasattr(self, 'tabela_clientes') and self.tabela_clientes.winfo_exists():
+            try:
+                for item in self.tabela_clientes.get_children():
+                    self.tabela_clientes.delete(item)
+                
+                for cliente in clientes.buscar_clientes(termo_busca):
+                    self.tabela_clientes.insert('', 'end', values=cliente)
+            except tk.TclError:
+                # Widget has been destroyed, skip filtering
+                pass
+
+    def editar_produto_selecionado(self):
+        """Edit selected product"""
+        selection = self.tabela_produtos.selection()
+        if not selection:
+            self.notification_manager.show_notification(
+                "Selecione um produto para editar",
+                type_='warning'
+            )
+            return
+        
+        item = self.tabela_produtos.item(selection[0])
+        produtos.gui_atualizar_produto(item['values'][0])
+
+    def excluir_produto_selecionado(self):
+        """Delete selected product"""
+        selection = self.tabela_produtos.selection()
+        if not selection:
+            self.notification_manager.show_notification(
+                "Selecione um produto para excluir",
+                type_='warning'
+            )
+            return
+        
+        if messagebox.askyesno("Confirmar", "Deseja realmente excluir este produto?"):
+            item = self.tabela_produtos.item(selection[0])
+            produtos.excluir_produto(item['values'][0])
+            self.carregar_produtos()
+            self.notification_manager.show_notification(
+                "Produto excluído com sucesso!",
+                type_='success'
+            )
+
+    def editar_cliente_selecionado(self):
+        """Edit selected customer"""
+        selection = self.tabela_clientes.selection()
+        if not selection:
+            self.notification_manager.show_notification(
+                "Selecione um cliente para editar",
+                type_='warning'
+            )
+            return
+        
+        item = self.tabela_clientes.item(selection[0])
+        clientes.gui_atualizar_cliente(item['values'][0])
+
+    def excluir_cliente_selecionado(self):
+        """Delete selected customer"""
+        selection = self.tabela_clientes.selection()
+        if not selection:
+            self.notification_manager.show_notification(
+                "Selecione um cliente para excluir",
+                type_='warning'
+            )
+            return
+        
+        if messagebox.askyesno("Confirmar", "Deseja realmente excluir este cliente?"):
+            item = self.tabela_clientes.item(selection[0])
+            clientes.excluir_cliente(item['values'][0])
+            self.carregar_clientes()
+            self.notification_manager.show_notification(
+                "Cliente excluído com sucesso!",
+                type_='success'
+            )
+
+    def registrar_venda(self):
+        """Register new sale"""
+        cliente = self.cliente_var.get()
+        produto = self.produto_var.get()
+        quantidade = self.qtd_var.get()
+
+        if not all([cliente, produto, quantidade]):
+            self.notification_manager.show_notification(
+                "Preencha todos os campos!",
+                type_='warning'
+            )
+            return
+
+        try:
+            quantidade = int(quantidade)
+            # Implement this in vendas.py
+            relatorios.registrar_venda(cliente, produto, quantidade)
+            self.carregar_vendas_recentes()
+            self.notification_manager.show_notification(
+                "Venda registrada com sucesso!",
+                type_='success'
+            )
+            # Clear form
+            self.cliente_var.set('')
+            self.produto_var.set('')
+            self.qtd_var.set('')
+        except ValueError:
+            self.notification_manager.show_notification(
+                "Quantidade inválida!",
+                type_='error'
+            )
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao registrar venda: {str(e)}",
+                type_='error'
+            )
+
+    def gerar_relatorio(self):
+        """Generate selected report"""
+        tipo = self.tipo_relatorio.get()
+        data_inicio = self.data_inicio.get()
+        data_fim = self.data_fim.get()
+
+        try:
+            if tipo == "vendas":
+                relatorio = relatorios.gerar_relatorio_vendas(data_inicio, data_fim)
+            else:
+                relatorio = relatorios.gerar_relatorio_estoque()
+
+            self.preview_text.delete('1.0', tk.END)
+            self.preview_text.insert('1.0', relatorio)
             
-            tk.Label(card, text=str(valor), font=("Arial", 28, "bold"), 
-                    bg=cor, fg="white").pack(pady=10)
-            tk.Label(card, text=titulo, font=("Arial", 12), 
-                    bg=cor, fg="white").pack()
+            self.notification_manager.show_notification(
+                "Relatório gerado com sucesso!",
+                type_='success'
+            )
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao gerar relatório: {str(e)}",
+                type_='error'
+            )
 
-    except Exception as e:
-        tk.Label(boas_vindas, text="Erro ao carregar estatísticas", 
-                font=("Arial", 14), bg="#ffffff", fg="#e74c3c").pack(pady=20)
+    def backup_banco(self):
+        """Create database backup"""
+        try:
+            nome_backup = f'backup_integre_plus_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db'
+            shutil.copy('integre_plus.db', nome_backup)
+            self.notification_manager.show_notification(
+                f"Backup criado: {nome_backup}",
+                type_='success'
+            )
+        except Exception as e:
+            self.notification_manager.show_notification(
+                f"Erro ao criar backup: {str(e)}",
+                type_='error'
+            )
 
-    # Painel lateral direito - Estoque
-    estoque_frame = tk.Frame(corpo, bg="#2c3e50", width=400)
-    estoque_frame.pack(side="right", fill="y")
-    estoque_frame.pack_propagate(False)
+    def gerenciar_usuarios(self):
+        """Show user management interface"""
+        if self.permissao_usuario != "Admin":
+            self.notification_manager.show_notification(
+                "Acesso negado!",
+                type_='error'
+            )
+            return
 
-    # Carregar lista de produtos no painel lateral
-    produtos.gui_listar_produtos(parent=estoque_frame)
+        # Implement user management interface
+        pass
 
-    # Barra de menu superior
-    menubar = tk.Menu(root)
-    
-    # Menu Produtos
-    menu_produtos = tk.Menu(menubar, tearoff=0)
-    menu_produtos.add_command(label="Cadastrar Produto", command=lambda: produtos.gui_cadastrar_produto(tela_cheia=True))
-    menu_produtos.add_command(label="Listar Produtos", command=lambda: produtos.gui_listar_produtos(tela_cheia=True))
-    menu_produtos.add_command(label="Atualizar Produto", command=lambda: produtos.gui_atualizar_produto(tela_cheia=True))
-    menu_produtos.add_command(label="Excluir Produto", command=lambda: produtos.gui_excluir_produto(tela_cheia=True))
-    menu_produtos.add_separator()
-    menu_produtos.add_command(label="Importar CSV", command=importar_produtos_csv)
-    menu_produtos.add_command(label="Exportar Excel", command=produtos.exportar_produtos_para_excel)
-    menubar.add_cascade(label="Produtos", menu=menu_produtos)
+    def logout(self):
+        """Logout current user"""
+        if messagebox.askyesno("Logout", "Deseja realmente sair?"):
+            self.root.destroy()
+            # Import and start the modern login
+            import login
+            login.main()
 
-    # Menu Clientes
-    menu_clientes = tk.Menu(menubar, tearoff=0)
-    menu_clientes.add_command(label="Cadastrar Cliente", command=lambda: clientes.gui_cadastrar_cliente(tela_cheia=True))
-    menu_clientes.add_command(label="Listar Clientes", command=lambda: clientes.gui_listar_clientes(tela_cheia=True))
-    menu_clientes.add_command(label="Excluir Cliente", command=lambda: clientes.gui_excluir_cliente(tela_cheia=True))
-    menubar.add_cascade(label="Clientes", menu=menu_clientes)
+    def main_gui(self):
+        """Initialize main GUI"""
+        self.root = tk.Tk()
+        self.root.title("Integre+ Adegas e Suplementos")
+        self.root.attributes('-fullscreen', True)
 
-    # Menu Relatórios
-    menu_relatorios = tk.Menu(menubar, tearoff=0)
-    menu_relatorios.add_command(label="Relatório de Validade", command=relatorio_validade)
-    menu_relatorios.add_command(label="Relatório de Clientes", command=relatorios.gerar_relatorio_clientes)
-    menu_relatorios.add_command(label="Relatório por Categoria", command=relatorios.gerar_relatorio_categoria)
-    menu_relatorios.add_command(label="Relatório Geral", command=relatorios.gerar_relatorio_geral)
-    menu_relatorios.add_separator()
-    menu_relatorios.add_command(label="Gráfico de Vendas", command=relatorios.grafico_vendas)
-    menubar.add_cascade(label="Relatórios", menu=menu_relatorios)
+        # Initialize style
+        self.estilo = ttk.Style()
+        self.aplicar_tema(self.estilo, self.tema_atual)
 
-    # Menu Sistema
-    menu_sistema = tk.Menu(menubar, tearoff=0)
-    menu_sistema.add_command(label="Backup do Banco", command=backup_banco)
-    menu_sistema.add_command(label="Alternar Tema", command=alternar_tema)
-    menu_sistema.add_separator()
-    if permissao_usuario == "Admin":
-        menu_sistema.add_command(label="Cadastrar Usuário", command=abrir_cadastro)
-    menu_sistema.add_command(label="Logout", command=lambda: (root.destroy(), gui_login()))
-    menu_sistema.add_command(label="Sair", command=root.quit)
-    menubar.add_cascade(label="Sistema", menu=menu_sistema)
+        # Initialize notification manager
+        self.notification_manager = NotificationManager(self.root)
 
-    # Menu Ajuda
-    menu_ajuda = tk.Menu(menubar, tearoff=0)
-    menu_ajuda.add_command(label="Sobre", command=lambda: messagebox.showinfo("Sobre", 
-        "Integre+ v1.0\nSistema de Gestão para Adegas e Suplementos\n\nDesenvolvido com Python e Tkinter"))
-    menubar.add_cascade(label="Ajuda", menu=menu_ajuda)
-
-    root.config(menu=menubar)
-
-    # Barra de status
-    status_bar = tk.Frame(root, bg="#34495e", height=25)
-    status_bar.pack(side="bottom", fill="x")
-    status_bar.pack_propagate(False)
-
-    data_atual = datetime.now().strftime("%d/%m/%Y %H:%M")
-    tk.Label(status_bar, text=f"Data/Hora: {data_atual} | Usuário: {usuario_logado} | Sistema: Integre+ v1.0", 
-             bg="#34495e", fg="white", font=("Arial", 10)).pack(side="left", padx=10, pady=2)
-
-    root.mainloop()
+        # Create main layout
+        self.criar_barra_superior()
+        
+        # Main content area
+        corpo = ttk.Frame(self.root)
+        corpo.pack(fill="both", expand=True)
+        
+        self.criar_menu_lateral(corpo)
+        
+        # Content frame
+        self.conteudo_frame = ttk.Frame(corpo, style='Card.TFrame')
+        self.conteudo_frame.pack(side="left", fill="both", expand=True)
+        
+        # Create status bar
+        self.criar_barra_status()
+        
+        # Show initial dashboard
+        self.mostrar_dashboard()
+        
+        # Start main loop
+        self.root.mainloop()
 
 def gui_login():
-    global usuario_logado, permissao_usuario
-    
+    """Show login interface"""
     login = tk.Tk()
     login.title("Integre+ - Login")
     login.attributes('-fullscreen', True)
-    login.config(bg="#2c3e50")
+    login.configure(bg=THEMES['claro']['background'])
 
-    # Frame central
-    frame = tk.Frame(login, bg="#34495e", padx=40, pady=40)
+    # Initialize style
+    style = ttk.Style()
+    style.theme_use('clam')
+
+    # Center frame
+    frame = ttk.Frame(login, style='Card.TFrame')
     frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    # Logo/Título
-    tk.Label(frame, text="INTEGRE+", font=("Arial", 32, "bold"), 
-             bg="#34495e", fg="#3498db").pack(pady=20)
+    # Logo/Title
+    ttk.Label(
+        frame,
+        text="INTEGRE+",
+        font=("Arial", 32, "bold"),
+        foreground=THEMES['claro']['primary']
+    ).pack(pady=20)
     
-    tk.Label(frame, text="Sistema de Gestão", font=("Arial", 16), 
-             bg="#34495e", fg="white").pack(pady=5)
+    ttk.Label(
+        frame,
+        text="Sistema de Gestão",
+        font=("Arial", 16),
+        foreground=THEMES['claro']['text']
+    ).pack(pady=5)
     
-    tk.Label(frame, text="Adegas e Suplementos", font=("Arial", 16), 
-             bg="#34495e", fg="white").pack(pady=(0, 30))
+    ttk.Label(
+        frame,
+        text="Adegas e Suplementos",
+        font=("Arial", 16),
+        foreground=THEMES['claro']['text']
+    ).pack(pady=(0, 30))
 
-    # Campos de login
-    tk.Label(frame, text="Usuário:", font=("Arial", 14), 
-             bg="#34495e", fg="white").pack(anchor="w", pady=(10, 5))
-    entry_user = tk.Entry(frame, font=("Arial", 14), width=30)
+    # Login fields
+    ttk.Label(
+        frame,
+        text="Usuário:",
+        font=("Arial", 14),
+        foreground=THEMES['claro']['text']
+    ).pack(anchor="w", pady=(10, 5))
+    
+    entry_user = ttk.Entry(frame, font=("Arial", 14), width=30)
     entry_user.pack(pady=(0, 10))
 
-    tk.Label(frame, text="Senha:", font=("Arial", 14), 
-             bg="#34495e", fg="white").pack(anchor="w", pady=(10, 5))
-    entry_pass = tk.Entry(frame, show="*", font=("Arial", 14), width=30)
+    ttk.Label(
+        frame,
+        text="Senha:",
+        font=("Arial", 14),
+        foreground=THEMES['claro']['text']
+    ).pack(anchor="w", pady=(10, 5))
+    
+    entry_pass = ttk.Entry(frame, show="*", font=("Arial", 14), width=30)
     entry_pass.pack(pady=(0, 20))
 
     def fazer_login():
-        global usuario_logado, permissao_usuario
         user = entry_user.get().strip()
         senha = entry_pass.get()
         
@@ -370,40 +892,41 @@ def gui_login():
             
         usuario = clientes.autenticar_usuario(user, senha)
         if usuario:
-            usuario_logado = user
-            permissao_usuario = usuario.get('permissao', 'Funcionario') if isinstance(usuario, dict) else 'Funcionario'
+            app = IntegrePlusGUI()
+            app.usuario_logado = user
+            app.permissao_usuario = usuario.get('permissao', 'Funcionario') if isinstance(usuario, dict) else 'Funcionario'
             login.destroy()
-            main_gui()
+            app.main_gui()
         else:
             messagebox.showerror("Erro", "Usuário ou senha inválidos!")
             entry_pass.delete(0, tk.END)
 
-    # Permitir login com Enter
-    def on_enter(event):
-        fazer_login()
-    
-    entry_user.bind('<Return>', on_enter)
-    entry_pass.bind('<Return>', on_enter)
+    # Enter key binding
+    entry_user.bind('<Return>', lambda e: entry_pass.focus())
+    entry_pass.bind('<Return>', lambda e: fazer_login())
 
-    # Botões
-    tk.Button(frame, text="Entrar", command=fazer_login, 
-              font=("Arial", 14), bg="#27ae60", fg="white", 
-              width=25, height=2).pack(pady=10)
+    # Buttons
+    ModernButton(
+        frame,
+        text="🔑 Entrar",
+        command=fazer_login,
+        width=25
+    ).pack(pady=10)
     
-    tk.Button(frame, text="Cadastrar Novo Usuário", command=abrir_cadastro, 
-              font=("Arial", 14), bg="#2980b9", fg="white", 
-              width=25, height=2).pack(pady=5)
-    
-    tk.Button(frame, text="Sair", command=login.destroy, 
-              font=("Arial", 14), bg="#c0392b", fg="white", 
-              width=25, height=2).pack(pady=10)
+    ModernButton(
+        frame,
+        text="❌ Sair",
+        command=login.destroy,
+        width=25
+    ).pack(pady=10)
 
-    # Focar no campo usuário
+    # Focus username
     entry_user.focus()
 
+    # Start login loop
     login.mainloop()
 
 if __name__ == "__main__":
-    # Inicializar banco de dados
-    database.criar_tabelas()
+    # Initialize database
+    database.create_tables()
     gui_login()

@@ -254,3 +254,102 @@
 2025-05-31 13:19:22,109 - produtos - INFO - Produto cadastrado: Whey
 2025-05-31 13:20:45,796 - clientes - INFO - Cliente cadastrado: Rafaela
 2025-05-31 13:20:55,367 - database - INFO - Database tables and indices created successfully
+2025-05-31 18:30:24,876 - __main__ - INFO - Initializing database...
+2025-05-31 18:30:24,885 - database - INFO - Database tables and indices created successfully
+2025-05-31 18:30:24,886 - __main__ - INFO - Starting modern login window...
+2025-05-31 18:30:49,647 - __main__ - INFO - Initializing database...
+2025-05-31 18:30:49,655 - database - INFO - Database tables and indices created successfully
+2025-05-31 18:30:49,656 - __main__ - INFO - Starting modern login window...
+2025-05-31 18:31:00,961 - login - INFO - Successful login for user: Arthur
+2025-05-31 18:31:03,204 - database - INFO - Database tables and indices created successfully
+2025-05-31 18:33:34,472 - produtos - INFO - Produto cadastrado: Whisky
+2025-06-02 19:42:31,634 - __main__ - INFO - Initializing database...
+2025-06-02 19:42:31,658 - database - INFO - Database tables and indices created successfully
+2025-06-02 19:42:31,660 - __main__ - INFO - Starting modern login window...
+2025-06-02 19:42:44,005 - login - INFO - Successful login for user: Arthur
+2025-06-02 19:42:46,605 - database - INFO - Database tables and indices created successfully
+2025-06-02 19:43:51,445 - produtos - INFO - Produto cadastrado: Creatina
+2025-06-09 21:10:04,659 - __main__ - INFO - Initializing database...
+2025-06-09 21:10:04,680 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:10:04,680 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:10:17,298 - login - WARNING - Failed login attempt for user: arthur
+2025-06-09 21:10:26,392 - login - WARNING - Failed login attempt for user: arthur
+2025-06-09 21:10:37,489 - login - WARNING - Failed login attempt for user: arthur
+2025-06-09 21:11:04,296 - __main__ - INFO - Initializing database...
+2025-06-09 21:11:04,320 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:11:04,321 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:11:16,009 - login - WARNING - Failed login attempt for user: Arthur
+2025-06-09 21:11:27,902 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:11:33,193 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:16:29,980 - __main__ - INFO - Initializing database...
+2025-06-09 21:16:29,989 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:16:29,991 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:16:46,617 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:16:49,196 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:20:06,710 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:20:17,350 - __main__ - INFO - Initializing database...
+2025-06-09 21:20:17,361 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:20:17,363 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:20:30,316 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:20:32,852 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:23:49,706 - __main__ - INFO - Initializing database...
+2025-06-09 21:23:49,719 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:23:49,721 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:24:07,187 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:24:09,883 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:26:31,787 - __main__ - INFO - Initializing database...
+2025-06-09 21:26:31,801 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:26:31,803 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:26:45,100 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:26:47,733 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:29:55,351 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:29:56,048 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:30:08,264 - clientes - INFO - Login bem-sucedido: Arthur
+2025-06-09 21:33:43,415 - __main__ - INFO - Initializing database...
+2025-06-09 21:33:43,426 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:33:43,429 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:33:55,204 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:33:57,826 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:33:59,084 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:33:59,085 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:34:09,166 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:34:09,167 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:34:13,449 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:34:13,451 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:10,339 - __main__ - INFO - Initializing database...
+2025-06-09 21:37:10,351 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:37:10,353 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:37:21,443 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:37:24,059 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:37:25,311 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:25,312 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:30,249 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:30,251 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:32,602 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:37:32,602 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:40:35,484 - __main__ - INFO - Initializing database...
+2025-06-09 21:40:35,499 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:40:35,500 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:40:44,610 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:40:47,290 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:40:48,546 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:40:48,548 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:43:45,068 - __main__ - INFO - Initializing database...
+2025-06-09 21:43:45,073 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:43:45,073 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:43:56,768 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:43:59,320 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:44:00,569 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:44:00,572 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:47:19,940 - __main__ - INFO - Initializing database...
+2025-06-09 21:47:19,952 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:47:19,954 - __main__ - INFO - Starting modern login window...
+2025-06-09 21:47:29,903 - login - INFO - Successful login for user: Arthur
+2025-06-09 21:47:32,518 - database - INFO - Database tables and indices created successfully
+2025-06-09 21:47:33,757 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:47:33,759 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:48:53,209 - produtos - INFO - Produto cadastrado: BCAA
+2025-06-09 21:49:00,155 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:49:00,157 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:49:38,947 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-06-09 21:49:38,951 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.

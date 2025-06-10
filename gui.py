@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from PIL import Image, ImageTk
 import produtos, relatorios, clientes
+import vendas
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -417,15 +418,15 @@ class IntegrePlusGUI:
         # Cliente
         ttk.Label(form_frame, text="Cliente:").grid(row=0, column=0, padx=5, pady=5)
         self.cliente_var = tk.StringVar()
-        cliente_cb = ttk.Combobox(form_frame, textvariable=self.cliente_var)
+        self.cliente_cb = ttk.Combobox(form_frame, textvariable=self.cliente_var, state='readonly')
         clientes_list = clientes.listar_clientes()
-        cliente_cb['values'] = [c['nome'] if isinstance(c, dict) else c[1] for c in clientes_list]
-        cliente_cb.grid(row=0, column=1, padx=5, pady=5)
+        self.cliente_cb['values'] = [c['nome'] if isinstance(c, dict) else c[1] for c in clientes_list]
+        self.cliente_cb.grid(row=0, column=1, padx=5, pady=5)
 
         # Produto
         ttk.Label(form_frame, text="Produto:").grid(row=1, column=0, padx=5, pady=5)
         self.produto_var = tk.StringVar()
-        produto_cb = ttk.Combobox(form_frame, textvariable=self.produto_var)
+        self.produto_cb = ttk.Combobox(form_frame, textvariable=self.produto_var, state='readonly')
         produtos_list = produtos.listar_produtos()
         # Defensive check for dict or tuple and handle KeyError
         produto_names = []
@@ -437,13 +438,24 @@ class IntegrePlusGUI:
                     produto_names.append(p[1])
             except (KeyError, IndexError):
                 continue
-        produto_cb['values'] = produto_names
-        produto_cb.grid(row=1, column=1, padx=5, pady=5)
+        self.produto_cb['values'] = produto_names
+        self.produto_cb.grid(row=1, column=1, padx=5, pady=5)
 
         # Quantidade
         ttk.Label(form_frame, text="Quantidade:").grid(row=2, column=0, padx=5, pady=5)
         self.qtd_var = tk.StringVar()
-        ttk.Entry(form_frame, textvariable=self.qtd_var).grid(row=2, column=1, padx=5, pady=5)
+        # Add validation to allow only digits
+        def validate_digit(P):
+            return P.isdigit() or P == ""
+        vcmd = (form_frame.register(validate_digit), '%P')
+        self.qtd_entry = ttk.Entry(form_frame, textvariable=self.qtd_var, validate='key', validatecommand=vcmd)
+        self.qtd_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        # Debug notification to show initial values of StringVars
+        self.notification_manager.show_notification(
+            f"Debug mostrar_vendas: Produto='{self.produto_var.get()}', Quantidade='{self.qtd_var.get()}'",
+            type_='info'
+        )
 
         # Register sale button
         ModernButton(
@@ -646,9 +658,20 @@ class IntegrePlusGUI:
                 for item in self.tabela_vendas.get_children():
                     self.tabela_vendas.delete(item)
                 
-                # Implement this in vendas.py
                 for venda in relatorios.obter_vendas_recentes():
-                    self.tabela_vendas.insert('', 'end', values=venda)
+                    # venda is a tuple: (id, data, cliente, produto, quantidade, total)
+                    if isinstance(venda, (list, tuple)) and len(venda) == 6:
+                        values = (
+                            venda[0],  # id
+                            venda[1],  # data
+                            venda[2],  # cliente (username)
+                            venda[3],  # produto
+                            venda[4],  # quantidade
+                            venda[5]   # total
+                        )
+                    else:
+                        values = tuple(venda)
+                    self.tabela_vendas.insert('', 'end', values=values)
             except tk.TclError:
                 # Widget has been destroyed, skip loading
                 pass
@@ -661,7 +684,22 @@ class IntegrePlusGUI:
                     self.tabela_produtos.delete(item)
                 
                 for produto in produtos.buscar_produtos(termo_busca):
-                    self.tabela_produtos.insert('', 'end', values=produto)
+                    if isinstance(produto, dict):
+                        values = (
+                            produto.get('id', ''),
+                            produto.get('nome', ''),
+                            produto.get('quantidade', ''),
+                            f"R$ {produto.get('preco', 0):.2f}" if produto.get('preco') is not None else '',
+                            produto.get('validade', ''),
+                            produto.get('categoria', ''),
+                            produto.get('codigo_barras', ''),
+                            produto.get('fornecedor_id', '')
+                        )
+                    elif isinstance(produto, (list, tuple)):
+                        values = produto
+                    else:
+                        values = (produto,)
+                    self.tabela_produtos.insert('', 'end', values=values)
             except tk.TclError:
                 # Widget has been destroyed, skip filtering
                 pass
@@ -674,7 +712,19 @@ class IntegrePlusGUI:
                     self.tabela_clientes.delete(item)
                 
                 for cliente in clientes.buscar_clientes(termo_busca):
-                    self.tabela_clientes.insert('', 'end', values=cliente)
+                    if isinstance(cliente, dict):
+                        values = (
+                            cliente.get('id', ''),
+                            cliente.get('nome', ''),
+                            cliente.get('email', ''),
+                            cliente.get('telefone', ''),
+                            cliente.get('endereco', '')
+                        )
+                    elif isinstance(cliente, (list, tuple)):
+                        values = cliente
+                    else:
+                        values = (cliente,)
+                    self.tabela_clientes.insert('', 'end', values=values)
             except tk.TclError:
                 # Widget has been destroyed, skip filtering
                 pass
@@ -742,33 +792,86 @@ class IntegrePlusGUI:
                 "Cliente excluído com sucesso!",
                 type_='success'
             )
+    # import vendas  # Already imported at the top
+    import vendas
 
     def registrar_venda(self):
         """Register new sale"""
-        cliente = self.cliente_var.get()
-        produto = self.produto_var.get()
-        quantidade = self.qtd_var.get()
+        cliente_nome = self.cliente_cb.get()
+        produto_nome = self.produto_cb.get()
+        quantidade_str = self.qtd_entry.get()
 
-        if not all([cliente, produto, quantidade]):
+        self.notification_manager.show_notification(
+            f"Debug registrar_venda: Produto='{produto_nome}', Quantidade raw='{repr(quantidade_str)}'",
+            type_='info'
+        )
+
+        if not produto_nome.strip():
             self.notification_manager.show_notification(
-                "Preencha todos os campos!",
+                "Preencha o campo Produto!",
+                type_='warning'
+            )
+            return
+
+        if not quantidade_str.strip():
+            self.notification_manager.show_notification(
+                "Preencha o campo Quantidade!",
                 type_='warning'
             )
             return
 
         try:
-            quantidade = int(quantidade)
-            # Implement this in vendas.py
-            relatorios.registrar_venda(cliente, produto, quantidade)
-            self.carregar_vendas_recentes()
-            self.notification_manager.show_notification(
-                "Venda registrada com sucesso!",
-                type_='success'
-            )
-            # Clear form
-            self.cliente_var.set('')
-            self.produto_var.set('')
-            self.qtd_var.set('')
+            quantidade = int(quantidade_str)
+            if quantidade <= 0:
+                self.notification_manager.show_notification(
+                    "Quantidade deve ser maior que zero!",
+                    type_='warning'
+                )
+                return
+
+            # Buscar produto pelo nome para obter id e preço
+            produtos_lista = produtos.listar_produtos()
+            produto = next((p for p in produtos_lista if ((p['nome'] if isinstance(p, dict) else p[1]).strip().lower() == produto_nome.strip().lower())), None)
+            if not produto:
+                self.notification_manager.show_notification(
+                    "Produto não encontrado!",
+                    type_='error'
+                )
+                return
+
+            produto_id = produto['id'] if isinstance(produto, dict) else produto[0]
+            preco_unitario = produto['preco'] if isinstance(produto, dict) else produto[3]
+            estoque = produto['quantidade'] if isinstance(produto, dict) else produto[2]
+
+            if estoque < quantidade:
+                self.notification_manager.show_notification(
+                    "Quantidade insuficiente em estoque!",
+                    type_='error'
+                )
+                return
+
+            # Buscar cliente pelo nome para obter id
+            clientes_lista = clientes.listar_clientes()
+            cliente = next((c for c in clientes_lista if ((c['nome'] if isinstance(c, dict) else c[1]).strip().lower() == cliente_nome.strip().lower())), None)
+            cliente_id = cliente['id'] if cliente and isinstance(cliente, dict) else (cliente[0] if cliente else None)
+
+            resultado = vendas.registrar_venda(produto_id, quantidade, preco_unitario, cliente_id)
+            if resultado == "Venda registrada com sucesso.":
+                self.notification_manager.show_notification(
+                    resultado,
+                    type_='success'
+                )
+                self.carregar_vendas_recentes()
+                self.carregar_produtos()
+                # Clear form
+                self.cliente_var.set('')
+                self.produto_var.set('')
+                self.qtd_var.set('')
+            else:
+                self.notification_manager.show_notification(
+                    resultado,
+                    type_='error'
+                )
         except ValueError:
             self.notification_manager.show_notification(
                 "Quantidade inválida!",
